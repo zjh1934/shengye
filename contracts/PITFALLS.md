@@ -90,7 +90,25 @@ for p in pathlib.Path('.').rglob('*.xml'):
 "
 ```
 
-## 10. 中文正则里别加 `\b`
+## 10. 新建 Android 模块忘了对齐 JVM target
+
+**现象**：`Inconsistent JVM-target compatibility detected for tasks 'compileDebugJavaWithJavac' (1.8) and 'compileDebugKotlin' (17)`。
+
+**根因**：Kotlin 插件默认按 toolchain 出 17，Java 编译默认还是 1.8。两者不一致，AGP 直接拒绝。
+
+**正确做法**：每个 `com.android.library` / `application` 模块的 `android { }` 里都要有：
+
+```kotlin
+compileOptions {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+}
+kotlinOptions { jvmTarget = "17" }
+```
+
+新建模块照抄这份，别只写 `namespace` 和 `compileSdk` 就跑。
+
+## 11. 中文正则里别加 `\b`
 
 **现象**：分章正则写了 `第X章\b`，结果一章都识别不出来。
 
