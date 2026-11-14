@@ -129,6 +129,12 @@
   块数按导入时落盘的块指纹数算，状态迁移一律走 `ProduceMachine`。
   本轮不外包：接口/合约边界多、要边看边改，主对话亲自串最省返工。
 
+- 2026-11-15（alpha3 发布）：`v0.1.0-alpha3` 已发，`shengye-1215b86.apk` 8.5 MB。
+  本轮 CI 连炸两次并修掉：① `FileTaskRepository.read()` 表达式体带裸 return；
+  ② **7 个空 feature 骨架缺 Compose 编译器插件**，导致 Kotlin IR lowering 找不到
+  `Column$default`（`PITFALLS.md` #18）。后者已一次性给全部 `feature:*` 补齐，
+  后续落其它页面不会再逐个炸。
+
 ## P3 批次计划（谁做什么、产物是什么）
 
 > 原则：**核心逻辑与平台相关的自己做，界面组装派出去**。
@@ -147,7 +153,7 @@
 | P3-9 | 正在听（播放器全屏） | 派 `audio` | `feature:player` | ⬜ |
 | P3-10 | 调音台 | 派 `audio` | `feature:mixer` | ⬜ |
 | P3-11 | 设置 + 模型 | 派 `data` | `feature:settings` `feature:models` | ⬜ |
-| P3-12 | 组装、真机手感回归、打 `v*` tag | 主对话 | Release 页可下载 | ✅ alpha1/2/3 |
+| P3-12 | 组装、真机手感回归、打 `v*` tag | 主对话 | Release 页可下载 | ✅ alpha3（`shengye-1215b86.apk` 8.5 MB） |
 
 **派活只派 P3-6 到 P3-11。** 每个任务说明必附：对应 `roles/*.md`、`contracts/PITFALLS.md`、`GLASS_TOKENS.md`、`STATE_VOCAB.md`、`spec/screens_*.js` 里对应那一组图、以及「只准写你负责的那一个 feature 目录」。
 
