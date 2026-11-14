@@ -3,7 +3,7 @@
 > **每次派活请把本档案原文附进任务说明。**
 
 - **负责**：`core:audio`（拼接 / 转码 / 校验 / WAV 清理）、`feature:player`（播放器 + 队列 + 常驻播放条）。
-- **不碰**：`core:domain` 状态机内部、`platform:native`、契约签名、视觉 token 定义。
+- **不碰**：`core:domain` 状态机内部、`platform:tts`、契约签名、视觉 token 定义。
 - **上岗必读**：`00_CHARTER.md`、`CONSTITUTION.md`（「音频与成品」「播放与收听」）、`contracts/ARCHITECTURE.md`、本档案。
 - **必须保留**：64kbps 单声道 AAC-LC M4A、章级拼接、接缝处理、段间静音、校验后删内部 WAV、倍速 0.75–2.0×、顺序/随机/循环、接着听、媒体通知。
 - **播放器要补回**：书目 / 章节归属、当前章在全书位置、全本剩余、可展开队列、章节跳转；但**不堆解释文字**。

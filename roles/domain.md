@@ -3,7 +3,7 @@
 > **每次派活请把本档案原文附进任务说明。**
 
 - **负责**：`core:contract`（接口与模型）、`core:domain`（分章 / 小块计划 / 断点续跑 / 任务状态机）。
-- **不碰**：任何 `feature:*` UI、`platform:native`、视觉、`02_PROGRESS.md`。
+- **不碰**：任何 `feature:*` UI、`platform:tts`、视觉、`02_PROGRESS.md`。
 - **上岗必读**：`00_CHARTER.md`、`CONSTITUTION.md`（尤其功能保留清单「制作链路」）、`contracts/ARCHITECTURE.md`、本档案。
 - **契约**：纯 Kotlin 优先，不依赖 Android；接口变更**必须**先报主对话批准。
 - **必须保留的语义**：逐块落盘断点续跑、AUTO/QUEUE/VIEW 续跑、自动续跑阻断原因、队列暂停、时长上限、没开始成功、意外中断、拼接/转码中态、成品登记失败时保留小块。

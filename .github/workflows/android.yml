@@ -53,6 +53,11 @@ jobs:
           echo "/opt/gradle-8.9/bin" >> "$GITHUB_PATH"
           gradle --version | head -6
 
+      # 纯逻辑单测先跑：状态机错了，界面再漂亮也是错的
+      - name: Unit tests (core:domain)
+        working-directory: android
+        run: gradle :core:domain:test --no-daemon
+
       - name: Assemble debug APK
         working-directory: android
         run: gradle assembleDebug --no-daemon --stacktrace

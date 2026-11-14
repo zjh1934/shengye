@@ -22,7 +22,7 @@
 :feature:models     模型（小修）
 
 :platform:service   前台服务 / 通知 / 悬浮球
-:platform:native    JNI / 端侧 TTS 引擎
+:platform:tts      JNI / 端侧 TTS 引擎
 :app                组装：导航 + 依赖注入。只接线，不承载业务逻辑
 ```
 

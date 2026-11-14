@@ -71,7 +71,7 @@ interface SettingsRepository {
     suspend fun overlayEnabled(): Boolean
 }
 
-/** 端侧 TTS 引擎：实现在 :platform:native（JNI），风险最高，总工程师亲自管。 */
+/** 端侧 TTS 引擎：实现在 :platform:tts（JNI），风险最高，总工程师亲自管。 */
 interface TtsEngine {
     suspend fun synthesize(chunk: Chunk, config: ProduceConfig, outPath: String): Result<Unit>
     fun cancel()

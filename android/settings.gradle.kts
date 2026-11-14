@@ -15,4 +15,4 @@ include(":design:glass")
 include(":feature:library", ":feature:book", ":feature:tasks", ":feature:player",
         ":feature:mixer", ":feature:settings", ":feature:models")
 // platform · 系统能力
-include(":platform:service", ":platform:native")
+include(":platform:service", ":platform:tts")

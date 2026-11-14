@@ -48,7 +48,7 @@ dependencies {
     implementation(project(":feature:settings"))
     implementation(project(":feature:models"))
     implementation(project(":platform:service"))
-    implementation(project(":platform:native"))
+    implementation(project(":platform:tts"))
 
     implementation(platform("androidx.compose:compose-bom:2024.10.01"))
     implementation("androidx.compose.ui:ui")

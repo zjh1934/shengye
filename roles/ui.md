@@ -3,7 +3,7 @@
 > **每次派活请把本档案原文附进任务说明。** 你没有长期记忆，本档案就是你的记忆。
 
 - **负责**：`design:glass`、`feature:library / book / tasks / player / mixer / settings / models` 的界面与交互。
-- **不碰**：`core:*` 内部实现、`platform:native`、契约签名、`CONSTITUTION.md`、`02_PROGRESS.md`。
+- **不碰**：`core:*` 内部实现、`platform:tts`、契约签名、`CONSTITUTION.md`、`02_PROGRESS.md`。
 - **上岗必读**：`00_CHARTER.md`、`CONSTITUTION.md`、`contracts/ARCHITECTURE.md`、`02_PROGRESS.md`、本档案。
 - **契约**：页面只读状态 + 发意图，不读盘、不轮询、不写死色值；视觉一律走 `design:glass` token。
 - **方向基线**：`preview/index.html`（毛玻璃 + 不啰嗦 + 职责分开）。玻璃要有降级策略（Android 8.0+）。

@@ -10,8 +10,20 @@
 | **P0 地基** | 防失忆文档、分工制度、模块化契约、口味宪法、功能保留清单 | ✅ 完成（10 份文档） |
 | **P1 方向** | 苹果毛玻璃主题 + 不啰嗦 + 四空间职责分开 + 调音台玻璃化，可交互原型 | ✅ **已确认**（用户授权「你看着推进就行，你自己定」） |
 | **P2 骨架** | 新 Android 工程、模块分包、`:core:contract` 接口、状态词表、玻璃 token、界面规格全集 | ✅ **完成**（工程骨架 + 契约 + 65 张界面规格全部验收） |
-| **P3 逐模块落地** | 按角色派活，逐个 feature / core 实现 + 单测，主对话验收 | ⬜ 未开始 |
+| **P3 逐模块落地** | 按角色派活，逐个 feature / core 实现 + 单测，主对话验收 | 🔵 **进行中**（`core:domain` 已落） |
 | **P4 集成** | 组装、真机手感回归、CI、发版口径 | ⬜ 未开始 |
+
+## 仓库与交付通道（★ 换机器/换会话第一件事看这里）
+
+| 项 | 值 |
+|---|---|
+| 仓库 | https://github.com/zjh1934/shengye （public） |
+| 默认分支 | `main` |
+| **推送方式** | **本机 git 协议上传不通**（TCP/TLS 能连上，数据发不出去，`git push` 卡死）→ 一律用 `tools/push_api.py` 走 GitHub REST API 建提交 |
+| 推送命令 | `GH_TOKEN=xxx python3 tools/push_api.py`（默认取本地 HEAD 的 commit message） |
+| CI | `.github/workflows/android.yml`，push → `assembleDebug` → artifact；打 `v*` tag → 自动发 Release |
+| 用户取包 | **只从 Releases 页下载 APK**，不往沙盒下载安装包 |
+| 已知 CI 坑 | `android-actions/setup-android@v3` 在本 runner 上必失败 → 已改为用预装 SDK 自补 `cmdline-tools`；Gradle 也改为官方发行包自装，减少第三方 action 变量 |
 
 ## 模块状态表
 
@@ -28,12 +40,12 @@
 | `android/core/contract` 4 个 Kotlin 文件 | 总工程师 | ✅ **已定稿** | 主对话 | 词表直接落进枚举，最敏感 |
 | `spec/index.html` 重做后界面规格全集 | ui/audio/data | ✅ **65 张已验收** | 主对话 | 8 组 A–H，五道验收全过 |
 | `design:glass` | ui | ⬜ | 主对话 | token 已定，待落 Kotlin |
-| `core:domain` | domain | ⬜ | 主对话 | 纯逻辑可单测 |
+| `core:domain` | domain | 🔵 **进行中** | 主对话 | 状态机 / 进度口径 / 分块 / 续跑策略已写，等编译与单测 |
 | `core:audio` / `feature:player` | audio | ⬜ | 主对话 | — |
 | `core:data` / `feature:models` / `platform:service` | data | ⬜ | 主对话 | — |
 | 其余 `feature:*` | ui | ⬜ | 主对话 | — |
-| `platform:native` | 总工程师 | ⬜ | 主对话 | JNI，风险最高，亲自管 |
-| CI → Release（`.github/workflows/android.yml`） | 总工程师 | ✅ 已配 | 主对话 | push/PR 出 artifact，打 `v*` 自动发 Release；**需仓库授权后才能跑** |
+| `platform:tts` | 总工程师 | ⬜ | 主对话 | JNI，风险最高，亲自管 |
+| CI → Release（`.github/workflows/android.yml`） | 总工程师 | 🔵 **已跑起来** | 主对话 | 首次失败在 setup-android，已修；仓库已建并推送 |
 
 ## 第一次实战派活（验证 `01_TEAM.md` 制度是否真跑得通）
 
@@ -96,8 +108,11 @@
 1. 验收 63 张图，合成 `spec/index.html`，写回本表与角色档案。
 2. 按 `ACCEPTANCE.md` 逐项打勾，把「真机手感回归」写成 CI 检查项。
 3. 进 **P3**：先派 `domain` 落 `:core:domain` 状态机（纯逻辑 + 单测），再派 `ui` 落 `design:glass` token，逐个 feature 推进。
-4. `platform:native`（JNI 端侧 TTS）风险最高，由总工程师亲自接，不外包。
+4. `platform:tts`（JNI 端侧 TTS）风险最高，由总工程师亲自接，不外包。
 
 - 2026-11-15（续四）：三路重派全部交回，**65 张 8 组齐**。全量验收：零渲染失败 / 零重复 id / 零缺字段 / 禁词 0 / 内联色值 0。逐组看图结论：播放器 E 组已补回封面·章节归属·全书位置·全本剩余·队列；调音台 F 组结构保留、旧版解释句已清零；设置 G 组完成重分层、模型只留名称体积状态动作。主对话收尾修正 F4 文案与 G1 分组标题。P2 完成。
 
 - 2026-11-15（续五）：**改名决议**——「听本」→ **声页 Shengye**；包名 `com.tingben.app` → `com.shengye.app`；目录 `/workspace/tingben-rebuild` → `/workspace/shengye`；仓库名 `shengye`（public）。旧码仍为 `/workspace/tingben`，未动。首页按用户要求改版：**顶部约 1/3 屏固定「粘贴文本 → 合成」**，其余给书单（契约已同步 CONSTITUTION / SPEC_CONTRACT）。新增 `contracts/BACKGROUND_KEEPALIVE.md`（L1–L6 保活梯级、权限清单、六厂商自启动路径、五条红线）。工程已可编译：`MainActivity` 骨架 + Manifest（**无 INTERNET**）+ 自适应图标 + 主题 + Compose 依赖；CI 配好 `assembleDebug` → artifact → tag 发 Release。本地 `git init` 并提交 95 个文件。**GitHub 建仓被拒**：MCP token `403 Resource not accessible by integration`，需用户重新连接连接器或提供 PAT。归因修正：子智能体失败主因是**免费额度耗尽**、不是任务规模（`01_TEAM.md` 已改写）。
+
+- 2026-11-16：**仓库落地**。`gh repo create zjh1934/shengye --public` 成功；但 `git push` 卡死（TCP/TLS 能连、数据发不出去）→ 改用 GitHub REST API 逐 blob 建提交，96 文件一次推上去（`2fc98715`）。固化 `tools/push_api.py`（幂等：内容没变就跳过；parent 取远端 main，线性前进不 force）。CI 首次运行失败在 `android-actions/setup-android@v3`，改为用 runner 预装 SDK 自补 `cmdline-tools`、Gradle 也改官方发行包自装，并把 `:core:domain:test` 排在 assembleDebug 之前。
+  **P3 开工**：`core:domain` 落地 4 个纯逻辑文件——`ProduceMachine`（状态机，非法转移一律原地返回、暂停/停止期间迟到回调不推进进度）、`Progress`（**唯一进度口径**，pct + 一行运行态 + ETA）、`Chunker`（确定性分块，块边界必须稳定否则续跑错位）、`ResumePolicy`（6 种续跑原因判定，明确「哪些该弹窗、哪些只给常驻条」）+ 24 个单测。这块是本项目最容易出 bug 的地方，主对话亲自写，不外包。
