@@ -46,10 +46,25 @@ jobs:
           yes | sdkmanager --licenses > /dev/null 2>&1 || true
           sdkmanager --install "platforms;android-35" "build-tools;35.0.0" "platform-tools" 2>&1 | tail -5
 
+      # 冷启动一次要下 Gradle 发行包 + 全套 AGP/Kotlin/Compose 依赖，六七分钟；
+      # 缓存后通常 2 分钟内跑完，验收节奏才跟得上。
+      - name: Cache Gradle
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/notifications
+            /opt/gradle-8.9
+          key: gradle-${{ runner.os }}-${{ hashFiles('android/**/*.gradle.kts') }}
+          restore-keys: |
+            gradle-${{ runner.os }}-
+
       - name: Set up Gradle
         run: |
-          curl -sSL -o /tmp/gradle.zip https://services.gradle.org/distributions/gradle-8.9-bin.zip
-          unzip -q /tmp/gradle.zip -d /opt
+          if [ ! -x /opt/gradle-8.9/bin/gradle ]; then
+            curl -sSL -o /tmp/gradle.zip https://services.gradle.org/distributions/gradle-8.9-bin.zip
+            unzip -q /tmp/gradle.zip -d /opt
+          fi
           echo "/opt/gradle-8.9/bin" >> "$GITHUB_PATH"
           gradle --version | head -6
 

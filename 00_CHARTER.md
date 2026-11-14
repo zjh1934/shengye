@@ -51,6 +51,7 @@
 | **毛玻璃视觉 token（含降级）** | `contracts/GLASS_TOKENS.md` |
 | **验收清单（产物验收 + 真机手感）** | `contracts/ACCEPTANCE.md` |
 | **后台保活与权限（梯级 + 清单 + 红线）** | `contracts/BACKGROUND_KEEPALIVE.md` |
+| **踩过的坑（派活必附）** | `contracts/PITFALLS.md` |
 | 角色档案（黑盒记忆外置） | `roles/*.md` |
 | 毛玻璃方向原型（代码绘制，已确认） | `preview/index.html` |
 | **用户旅程走查（以人使用为核心）** | `USER_JOURNEY.md` |
