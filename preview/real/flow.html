@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<style>
+  /* 真机 412×915（Pixel 7 逻辑尺寸），1dp 当 1px 用。四屏并排，逐张按 id 截。 */
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:#222;display:flex;flex-wrap:wrap;gap:18px;padding:18px;align-items:flex-start}
+  :root{
+    --accent:#4F46E5; --accentSoft:#EEF0FE;
+    --good:#0E9F6E; --goodBg:rgba(14,159,110,.12);
+    --warn:#B45309; --warnBg:rgba(180,83,9,.12);
+    --bad:#DC2626; --ink:#1B2030; --sub:#6B7280;
+    --hair:rgba(27,32,48,.10); --hair2:rgba(27,32,48,.06);
+    --glass:rgba(255,255,255,.58); --glassStrong:rgba(255,255,255,.90);
+    --glassEdge:rgba(255,255,255,.85);
+    --tabInk:#8A90A6;
+  }
+  .screen{
+    position:relative;width:412px;height:915px;overflow:hidden;flex:0 0 auto;
+    background:linear-gradient(180deg,#EEF2FF 0%,#F5F3FF 52%,#ECFEFF 100%);
+    font-family:-apple-system,"Noto Sans CJK SC","PingFang SC",sans-serif;
+    color:var(--ink);
+  }
+  .orb{position:absolute;border-radius:50%;filter:blur(46px);opacity:.55;pointer-events:none}
+  .o1{width:520px;height:520px;left:-120px;top:-180px;background:radial-gradient(circle,#7C3AED 0%,transparent 70%)}
+  .o2{width:440px;height:440px;right:-150px;top:140px;background:radial-gradient(circle,#EC4899 0%,transparent 70%);opacity:.5}
+  .o3{width:480px;height:480px;left:-140px;bottom:60px;background:radial-gradient(circle,#3B82F6 0%,transparent 70%);opacity:.47}
+  .o4{width:400px;height:400px;right:-120px;bottom:-120px;background:radial-gradient(circle,#F59E0B 0%,transparent 70%);opacity:.38}
+
+  /* 状态栏：真实 24dp */
+  .statusbar{
+    position:relative;height:24px;display:flex;align-items:center;
+    padding:0 16px;font-size:13px;font-weight:600;letter-spacing:.2px;
+  }
+  .sb-right{margin-left:auto;display:flex;align-items:center;gap:5px}
+  .sig{display:flex;align-items:flex-end;gap:1.5px;height:10px}
+  .sig i{width:2.5px;background:var(--ink);border-radius:1px;display:block}
+  .sig i:nth-child(1){height:3px}.sig i:nth-child(2){height:5px}
+  .sig i:nth-child(3){height:7px}.sig i:nth-child(4){height:9px}
+  .wifi{width:13px;height:9px;border:1.6px solid var(--ink);border-bottom:none;border-radius:8px 8px 0 0;opacity:.9}
+  .bat{width:20px;height:10px;border:1.4px solid var(--ink);border-radius:3px;position:relative}
+  .bat:after{content:"";position:absolute;right:-3px;top:3px;width:1.6px;height:4px;background:var(--ink);border-radius:0 1px 1px 0}
+  .bat i{position:absolute;inset:1.6px;width:70%;background:var(--ink);border-radius:1px}
+
+  /* 顶栏：书名 18px，不是软件名大写；不与底部 tab 同名 */
+  .appbar{display:flex;align-items:center;gap:10px;padding:6px 14px 10px}
+  .back{width:26px;height:26px;display:flex;align-items:center;justify-content:center;flex:0 0 auto}
+  .back svg{width:20px;height:20px}
+  .ab-txt{flex:1;min-width:0}
+  .ab-title{font-size:18px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .ab-sub{font-size:12px;color:var(--sub);margin-top:2px}
+  .ab-act{font-size:14px;color:var(--sub);padding:4px 6px;white-space:nowrap}
+
+  .content{position:relative;padding:0 14px}
+
+  .card{
+    background:var(--glass);border:1px solid var(--glassEdge);
+    border-radius:20px;padding:14px;backdrop-filter:blur(18px);
+    box-shadow:0 8px 24px rgba(27,32,48,.09);
+  }
+
+  /* 总览状态卡：一个状态 + 一行运行态 + 一个主按钮，不画 0% 空进度条 */
+  .stat-h{display:flex;align-items:center;gap:8px}
+  .grow{flex:1}
+  .stat-t{font-size:15px;font-weight:600}
+  .stat-line{font-size:13px;color:var(--sub);margin-top:3px}
+  .btn{
+    background:var(--accent);color:#fff;font-size:15px;font-weight:600;
+    padding:9px 18px;border-radius:12px;box-shadow:0 4px 12px rgba(79,70,229,.28);
+    white-space:nowrap;
+  }
+  .btn-ghost{
+    font-size:15px;font-weight:500;color:var(--ink);
+    padding:9px 16px;border-radius:12px;border:1px solid rgba(27,32,48,.16);
+    background:rgba(255,255,255,.42);white-space:nowrap;
+  }
+  .btn-line{font-size:14px;color:var(--accent);font-weight:500;padding:6px 8px;white-space:nowrap}
+
+  /* 章节行：一张卡包多行，序号 + 标题 + 字数 + 状态 + 阅读 */
+  .ch{display:flex;align-items:center;gap:8px;padding:11px 0}
+  .ch-idx{font-size:13px;color:var(--sub);width:18px;flex:0 0 auto;text-align:center}
+  .ch-txt{flex:1;min-width:0}
+  .ch-name{font-size:14.5px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .ch-meta{font-size:11.5px;color:var(--sub);margin-top:3px}
+  .chip{font-size:11px;padding:2px 7px;border-radius:8px;white-space:nowrap;flex:0 0 auto}
+  .chip.line{background:var(--hair);color:var(--sub)}
+  .chip.g{background:var(--goodBg);color:var(--good)}
+  .chip.w{background:var(--warnBg);color:var(--warn)}
+  .ch-act{font-size:13px;color:var(--accent);font-weight:500;padding:5px 4px;white-space:nowrap;flex:0 0 auto}
+  .divider{height:1px;background:var(--hair2)}
+
+  /* 勾章：勾选框 + 已选统计 */
+  .selbar{display:flex;align-items:center;padding:2px 2px 10px}
+  .selbar .txt{font-size:13px;color:var(--sub)}
+  .box{width:19px;height:19px;border-radius:6px;flex:0 0 auto;
+       border:1.5px solid rgba(27,32,48,.22);background:rgba(255,255,255,.5)}
+  .box.on{background:var(--accent);border-color:var(--accent);position:relative}
+  .box.on:after{content:"✓";position:absolute;inset:0;color:#fff;font-size:13px;
+       display:flex;align-items:center;justify-content:center}
+  .bottombar{
+    position:absolute;left:0;right:0;bottom:0;
+    background:var(--glassStrong);backdrop-filter:blur(20px);
+    border-top:1px solid rgba(27,32,48,.06);
+  }
+  .tabbar{
+    position:absolute;left:0;right:0;bottom:0;
+    background:var(--glassStrong);backdrop-filter:blur(20px);
+    border-top:1px solid rgba(27,32,48,.06);
+  }
+  .tabs{display:flex;justify-content:space-evenly;padding:8px 0}
+  .tabs span{font-size:13px;color:var(--tabInk);padding:6px 14px;border-radius:12px}
+  .tabs span.on{color:var(--accent);font-weight:600}
+  .gesture{height:16px;display:flex;align-items:center;justify-content:center}
+  .gesture i{width:108px;height:4px;border-radius:2px;background:rgba(27,32,48,.28)}
+  .bb-row{display:flex;align-items:center;padding:12px 14px;gap:10px}
+  .bb-info{flex:1;font-size:13px;color:var(--sub)}
+
+  /* 阅读器 */
+  .para{font-size:15.5px;line-height:1.95;color:var(--ink);margin-bottom:15px;text-indent:2em}
+  .reader-tools{display:flex;align-items:center;padding:12px 2px}
+  .reader-tools .lbl{font-size:13px;color:var(--sub)}
+  .a-btn{font-size:14px;color:var(--ink);border:1px solid rgba(27,32,48,.16);
+         border-radius:9px;padding:5px 11px;background:rgba(255,255,255,.42)}
+  .px{font-size:13px;color:var(--ink);font-weight:600;padding:0 8px}
+
+  /* 正在做：任务卡 */
+  .task-h{display:flex;align-items:center;gap:8px}
+  .task-name{font-size:16px;font-weight:600;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .bar{height:5px;border-radius:3px;background:var(--hair);margin-top:10px;overflow:hidden}
+  .bar i{display:block;height:100%;background:var(--accent);border-radius:3px}
+  .task-acts{display:flex;justify-content:flex-end;gap:18px;margin-top:12px}
+  .task-acts span{font-size:14px;color:var(--sub);font-weight:500}
+
+  .caption{position:absolute;top:2px;left:0;font-size:11px;color:#fff;background:#000a;padding:2px 8px;border-radius:0 0 8px 0;display:none}
+</style>
+</head>
+<body>
+
+<!-- ══════════ S1 这一本 · 章节列表（真实态：刚导入，全部未开始） ══════════ -->
+<div class="screen" id="s1">
+  <div class="orb o1"></div><div class="orb o2"></div><div class="orb o3"></div><div class="orb o4"></div>
+  <div class="statusbar"><span>9:41</span><div class="sb-right">
+    <div class="sig"><i></i><i></i><i></i><i></i></div><div class="wifi"></div><div class="bat"><i></i></div>
+  </div></div>
+
+  <div class="appbar">
+    <div class="back"><svg viewBox="0 0 24 24" fill="none"><path d="M15 5l-7 7 7 7" stroke="#1B2030" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+    <div class="ab-txt"><div class="ab-title">活着</div><div class="ab-sub">6 章 · 2.1 万字</div></div>
+  </div>
+
+  <div class="content">
+    <!-- 总览：一个状态 + 一行运行态 + 一个主按钮。0 进度不画空条 -->
+    <div class="card">
+      <div class="stat-h"><span class="stat-t">未开始</span><span class="grow"></span>
+        <span class="btn">制作这一本</span></div>
+      <div class="stat-line">0 / 6 章可听</div>
+    </div>
+    <div style="height:14px"></div>
+    <!-- 章节列表：一张卡包 6 行 -->
+    <div class="card" style="padding:2px 14px">
+      <div class="ch"><span class="ch-idx">1</span><div class="ch-txt"><div class="ch-name">第一章 · 黄昏</div><div class="ch-meta">3,240 字</div></div><span class="chip line">未开始</span><span class="ch-act">阅读</span></div>
+      <div class="divider"></div>
+      <div class="ch"><span class="ch-idx">2</span><div class="ch-txt"><div class="ch-name">第二章 · 田埂</div><div class="ch-meta">4,110 字</div></div><span class="chip line">未开始</span><span class="ch-act">阅读</span></div>
+      <div class="divider"></div>
+      <div class="ch"><span class="ch-idx">3</span><div class="ch-txt"><div class="ch-name">第三章 · 进城</div><div class="ch-meta">2,860 字</div></div><span class="chip line">未开始</span><span class="ch-act">阅读</span></div>
+      <div class="divider"></div>
+      <div class="ch"><span class="ch-idx">4</span><div class="ch-txt"><div class="ch-name">第四章 · 河水</div><div class="ch-meta">3,570 字</div></div><span class="chip line">未开始</span><span class="ch-act">阅读</span></div>
+      <div class="divider"></div>
+      <div class="ch"><span class="ch-idx">5</span><div class="ch-txt"><div class="ch-name">第五章 · 归来</div><div class="ch-meta">3,980 字</div></div><span class="chip line">未开始</span><span class="ch-act">阅读</span></div>
+      <div class="divider"></div>
+      <div class="ch"><span class="ch-idx">6</span><div class="ch-txt"><div class="ch-name">第六章 · 尾声</div><div class="ch-meta">2,640 字</div></div><span class="chip line">未开始</span><span class="ch-act">阅读</span></div>
+    </div>
+  </div>
+
+  <div class="tabbar">
+    <div class="tabs"><span>我的书</span><span class="on">这一本</span><span>正在做</span><span>正在听</span></div>
+    <div class="gesture"><i></i></div>
+  </div>
+</div>
+
+<!-- ══════════ S2 这一本 · 勾章多选 ══════════ -->
+<div class="screen" id="s2">
+  <div class="orb o1"></div><div class="orb o2"></div><div class="orb o3"></div><div class="orb o4"></div>
+  <div class="statusbar"><span>9:41</span><div class="sb-right">
+    <div class="sig"><i></i><i></i><i></i><i></i></div><div class="wifi"></div><div class="bat"><i></i></div>
+  </div></div>
+
+  <div class="appbar">
+    <div class="back"><svg viewBox="0 0 24 24" fill="none"><path d="M15 5l-7 7 7 7" stroke="#1B2030" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+    <div class="ab-txt"><div class="ab-title">选章制作</div></div>
+    <div class="ab-act">全选</div>
+  </div>
+
+  <div class="content" style="padding-top:8px">
+    <div class="card" style="padding:2px 14px">
+      <div class="ch"><span class="box on"></span><span class="ch-idx">1</span><div class="ch-txt"><div class="ch-name">第一章 · 黄昏</div><div class="ch-meta">3,240 字</div></div></div>
+      <div class="divider"></div>
+      <div class="ch"><span class="box on"></span><span class="ch-idx">2</span><div class="ch-txt"><div class="ch-name">第二章 · 田埂</div><div class="ch-meta">4,110 字</div></div></div>
+      <div class="divider"></div>
+      <div class="ch"><span class="box on"></span><span class="ch-idx">3</span><div class="ch-txt"><div class="ch-name">第三章 · 进城</div><div class="ch-meta">2,860 字</div></div></div>
+      <div class="divider"></div>
+      <div class="ch"><span class="box"></span><span class="ch-idx">4</span><div class="ch-txt"><div class="ch-name">第四章 · 河水</div><div class="ch-meta">3,570 字</div></div></div>
+      <div class="divider"></div>
+      <div class="ch"><span class="box"></span><span class="ch-idx">5</span><div class="ch-txt"><div class="ch-name">第五章 · 归来</div><div class="ch-meta">3,980 字</div></div></div>
+      <div class="divider"></div>
+      <div class="ch"><span class="box"></span><span class="ch-idx">6</span><div class="ch-txt"><div class="ch-name">第六章 · 尾声</div><div class="ch-meta">2,640 字</div></div></div>
+    </div>
+  </div>
+
+  <div class="bottombar">
+    <div class="bb-row"><span class="bb-info">已选 3 章</span><span class="btn">开始制作</span></div>
+    <div class="gesture"><i></i></div>
+  </div>
+</div>
+
+<!-- ══════════ S3 阅读器 · 全屏无 tab ══════════ -->
+<div class="screen" id="s3">
+  <div class="orb o1"></div><div class="orb o2"></div><div class="orb o3"></div><div class="orb o4"></div>
+  <div class="statusbar"><span>9:41</span><div class="sb-right">
+    <div class="sig"><i></i><i></i><i></i><i></i></div><div class="wifi"></div><div class="bat"><i></i></div>
+  </div></div>
+
+  <div class="appbar">
+    <div class="back"><svg viewBox="0 0 24 24" fill="none"><path d="M15 5l-7 7 7 7" stroke="#1B2030" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+    <div class="ab-txt"><div class="ab-title" style="font-size:16px">第二章 · 田埂</div><div class="ab-sub">活着</div></div>
+  </div>
+
+  <div class="content" style="padding-top:6px">
+    <div class="para">天亮时，田埂上的露水还没干。他背着手走过去，鞋底沾了湿泥，一步一步都很轻。</div>
+    <div class="para">远处有人在喊牛，声音拉得很长，越过三块水田，落到这边来时只剩下一点尾巴。</div>
+    <div class="para">她把水囊递过去，没说话。两个人就站在埂上，看那列骆驼慢慢挪过沙丘。</div>
+    <div class="para">风停了，四周安静得像一张纸。她数到第七颗星，才合上本子。</div>
+    <div class="para">「回去吧。」他说。她点点头，把围巾往上拢了拢，跟在他后面往村里走。</div>
+    <div class="para">路边的草垛矮下去一截，去年冬天烧过一回，开春又长起来，只是没从前高。</div>
+  </div>
+
+  <div class="bottombar">
+    <div class="reader-tools" style="padding:10px 14px">
+      <span class="lbl">字号</span><span style="flex:1"></span>
+      <span class="a-btn">A-</span><span class="px">16px</span><span class="a-btn">A+</span>
+    </div>
+    <div class="divider"></div>
+    <div class="reader-tools" style="padding:10px 14px;justify-content:space-between">
+      <span class="btn-ghost">上一章</span><span class="btn-ghost">下一章</span>
+    </div>
+    <div class="gesture"><i></i></div>
+  </div>
+</div>
+
+<!-- ══════════ S4 正在做 · 排队中 ══════════ -->
+<div class="screen" id="s4">
+  <div class="orb o1"></div><div class="orb o2"></div><div class="orb o3"></div><div class="orb o4"></div>
+  <div class="statusbar"><span>9:41</span><div class="sb-right">
+    <div class="sig"><i></i><i></i><i></i><i></i></div><div class="wifi"></div><div class="bat"><i></i></div>
+  </div></div>
+
+  <div class="content" style="padding-top:12px">
+    <div class="card">
+      <div class="task-h"><span class="task-name">活着</span><span class="chip line">排队中</span></div>
+      <div class="stat-line">3 章 · 36 块</div>
+      <div class="task-acts"><span>取消</span></div>
+    </div>
+  </div>
+
+  <div class="tabbar">
+    <div class="tabs"><span>我的书</span><span>这一本</span><span class="on">正在做</span><span>正在听</span></div>
+    <div class="gesture"><i></i></div>
+  </div>
+</div>
+
+</body>
+</html>

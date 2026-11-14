@@ -1,6 +1,7 @@
 package com.shengye.design.glass
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -103,13 +104,16 @@ fun BookRow(
     }
 }
 
-/** 任务卡：标题 + 状态胶囊 + 一行运行态 + 一根进度 + 可选动作。 */
+/**
+ * 任务卡：标题 + 状态胶囊 + 一行运行态 + 可选进度 + 可选动作。
+ * pct 传 null 表示不画进度条——排队中 / 未开始画一根 0% 的空条是纯视觉噪音。
+ */
 @Composable
 fun TaskCard(
     title: String,
     state: TaskState,
     line: String,
-    pct: Int,
+    pct: Int? = null,
     actions: (@Composable () -> Unit)? = null,
 ) {
     val c = Glass.colors
@@ -128,15 +132,17 @@ fun TaskCard(
         }
         Spacer(Modifier.height(6.dp))
         Text(line, color = c.sub, fontSize = Tokens.sub, maxLines = 2, overflow = TextOverflow.Ellipsis)
-        Spacer(Modifier.height(9.dp))
-        ProgressBar(pct, color = when (state) {
-            TaskState.DONE -> c.good
-            TaskState.FAILED -> c.bad
-            TaskState.LIMIT_REACHED -> c.warn
-            else -> c.accent
-        })
+        if (pct != null) {
+            Spacer(Modifier.height(9.dp))
+            ProgressBar(pct, color = when (state) {
+                TaskState.DONE -> c.good
+                TaskState.FAILED -> c.bad
+                TaskState.LIMIT_REACHED -> c.warn
+                else -> c.accent
+            })
+        }
         if (actions != null) {
-            Spacer(Modifier.height(8.dp))
+            Spacer(Modifier.height(10.dp))
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) { actions() }
         }
     }
@@ -150,12 +156,21 @@ fun toneOf(state: TaskState): Tone = when (state) {
     TaskState.PAUSED, TaskState.STOPPED -> Tone.NEUTRAL
 }
 
-/** 章节行：序号 + 标题 + 章状态。可勾选（勾章开做）。 */
+/**
+ * 章节行。两种形态共用一处定义，避免「列表」和「勾章」各画一版：
+ * - 常规：序号 + 标题/字数 + 状态胶囊 + 阅读入口
+ * - 勾章（selectable）：勾选框 + 序号 + 标题/字数，不显示状态与入口
+ *
+ * 状态词只来自 ChapterState.label，不自己拼。
+ */
 @Composable
 fun ChapterRow(
     index: Int,
     title: String,
-    state: ChapterState,
+    state: ChapterState = ChapterState.IDLE,
+    meta: String? = null,
+    actionText: String? = null,
+    onAction: (() -> Unit)? = null,
     selected: Boolean = false,
     selectable: Boolean = false,
     onClick: () -> Unit = {},
@@ -170,15 +185,7 @@ fun ChapterRow(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         if (selectable) {
-            Box(
-                Modifier
-                    .size(18.dp)
-                    .clip(RoundedCornerShape(6.dp))
-                    .background(if (selected) c.accent else c.hair),
-                contentAlignment = Alignment.Center,
-            ) {
-                if (selected) Text("✓", color = Color.White, fontSize = Tokens.tiny)
-            }
+            GlassCheck(selected)
             Spacer(Modifier.width(10.dp))
         }
         Text(
@@ -187,20 +194,57 @@ fun ChapterRow(
             fontSize = Tokens.sub,
             modifier = Modifier.width(22.dp),
         )
-        Text(
-            title,
-            color = c.ink,
-            fontSize = Tokens.body,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-            modifier = Modifier.weight(1f),
-        )
-        Spacer(Modifier.width(8.dp))
-        GlassChip(state.label, when (state) {
-            ChapterState.READY -> Tone.GOOD
-            ChapterState.BUILDING -> Tone.WARN
-            ChapterState.IDLE -> Tone.NEUTRAL
-        })
+        Column(Modifier.weight(1f)) {
+            Text(
+                title,
+                color = c.ink,
+                fontSize = Tokens.body,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+            if (meta != null) {
+                Spacer(Modifier.height(3.dp))
+                Text(meta, color = c.sub, fontSize = Tokens.tiny, maxLines = 1)
+            }
+        }
+        if (!selectable) {
+            Spacer(Modifier.width(8.dp))
+            GlassChip(state.label, when (state) {
+                ChapterState.READY -> Tone.GOOD
+                ChapterState.BUILDING -> Tone.WARN
+                ChapterState.IDLE -> Tone.NEUTRAL
+            })
+            if (actionText != null && onAction != null) {
+                Spacer(Modifier.width(6.dp))
+                Text(
+                    actionText,
+                    color = c.accent,
+                    fontSize = Tokens.sub,
+                    fontWeight = FontWeight.Medium,
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(8.dp))
+                        .clickable { onAction() }
+                        .padding(horizontal = 5.dp, vertical = 4.dp),
+                )
+            }
+        }
+    }
+}
+
+/** 勾选框。只负责画，选中态由调用方持有。 */
+@Composable
+fun GlassCheck(checked: Boolean) {
+    val c = Glass.colors
+    val shape = RoundedCornerShape(6.dp)
+    Box(
+        Modifier
+            .size(19.dp)
+            .clip(shape)
+            .background(if (checked) c.accent else c.hair)
+            .then(if (!checked) Modifier.border(1.5.dp, c.sub.copy(alpha = 0.35f), shape) else Modifier),
+        contentAlignment = Alignment.Center,
+    ) {
+        if (checked) Text("✓", color = Color.White, fontSize = Tokens.tiny)
     }
 }
 
