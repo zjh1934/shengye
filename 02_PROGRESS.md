@@ -10,7 +10,7 @@
 | **P0 地基** | 防失忆文档、分工制度、模块化契约、口味宪法、功能保留清单 | ✅ 完成（10 份文档） |
 | **P1 方向** | 苹果毛玻璃主题 + 不啰嗦 + 四空间职责分开 + 调音台玻璃化，可交互原型 | ✅ **已确认**（用户授权「你看着推进就行，你自己定」） |
 | **P2 骨架** | 新 Android 工程、模块分包、`:core:contract` 接口、状态词表、玻璃 token、界面规格全集 | ✅ **完成**（工程骨架 + 契约 + 65 张界面规格全部验收） |
-| **P3 逐模块落地** | 按角色派活，逐个 feature / core 实现 + 单测，主对话验收 | 🔵 **进行中**（`core:domain` 已落） |
+| **P3 逐模块落地** | 按角色派活，逐个 feature / core 实现 + 单测，主对话验收 | 🔵 **进行中**（domain / glass / data 已落，首包已发） |
 | **P4 集成** | 组装、真机手感回归、CI、发版口径 | ⬜ 未开始 |
 
 ## 仓库与交付通道（★ 换机器/换会话第一件事看这里）
@@ -39,13 +39,14 @@
 | `android/` 新 Gradle 多模块骨架（17 模块 + 53 文件） | 总工程师 | ✅ 已落地 | 主对话 | 本轮不接 SDK、不追求编译 |
 | `android/core/contract` 4 个 Kotlin 文件 | 总工程师 | ✅ **已定稿** | 主对话 | 词表直接落进枚举，最敏感 |
 | `spec/index.html` 重做后界面规格全集 | ui/audio/data | ✅ **65 张已验收** | 主对话 | 8 组 A–H，五道验收全过 |
-| `design:glass` | ui | ⬜ | 主对话 | token 已定，待落 Kotlin |
-| `core:domain` | domain | 🔵 **进行中** | 主对话 | 状态机 / 进度口径 / 分块 / 续跑策略已写，等编译与单测 |
+| `design:glass` | ui | ✅ **已验收** | 主对话 | token / 主题 / 骨架 / 7 个通用展示组件，CI 编译通过 |
+| `core:domain` | domain | ✅ **已验收** | 主对话 | 状态机 / 进度口径 / 分块 / 分章 / 路径规则，39 个单测全绿 |
 | `core:audio` / `feature:player` | audio | ⬜ | 主对话 | — |
-| `core:data` / `feature:models` / `platform:service` | data | ⬜ | 主对话 | — |
+| `core:data` | data | ✅ **已验收** | 主对话 | 原子写 / book.json / 书库，编码三路探测 |
+| `feature:models` / `platform:service` | data | ⬜ | 主对话 | — |
 | 其余 `feature:*` | ui | ⬜ | 主对话 | — |
 | `platform:tts` | 总工程师 | ⬜ | 主对话 | JNI，风险最高，亲自管 |
-| CI → Release（`.github/workflows/android.yml`） | 总工程师 | 🔵 **已跑起来** | 主对话 | 首次失败在 setup-android，已修；仓库已建并推送 |
+| CI → Release（`.github/workflows/android.yml`） | 总工程师 | ✅ **已跑通** | 主对话 | `v0.1.0-alpha1` 已发 Release，APK 8.4 MB 可下载 |
 
 ## 第一次实战派活（验证 `01_TEAM.md` 制度是否真跑得通）
 
@@ -110,9 +111,9 @@
 
 | 批次 | 内容 | 谁做 | 产物 | 状态 |
 |---|---|---|---|---|
-| P3-1 | 制作状态机 / 进度口径 / 分块 / 续跑策略 + 单测 | 主对话 | `core:domain` 4 文件 + 24 单测 | ✅ |
-| P3-2 | 毛玻璃 token / 主题 / 骨架 / 通用展示组件 | 主对话 | `design:glass` 4 文件 | 🔵 待 CI 确认 |
-| P3-3 | 存储层：书库、章节、任务、成品、模型清单持久化 | 主对话 | `core:data` | ⬜ |
+| P3-1 | 制作状态机 / 进度口径 / 分块 / 分章 / 路径规则 + 单测 | 主对话 | `core:domain` 6 文件 + 39 单测 | ✅ |
+| P3-2 | 毛玻璃 token / 主题 / 骨架 / 通用展示组件 | 主对话 | `design:glass` 4 文件 | ✅ |
+| P3-3 | 存储层：书库读写已落，任务/成品/模型清单待补 | 主对话 | `core:data` | 🔵 部分 |
 | P3-4 | 前台服务 + 保活梯级 + 通知 + 音频合成流水线 | 主对话 | `platform:service` + `core:audio` | ⬜ |
 | P3-5 | 端侧 TTS JNI 桥 | 主对话 | `platform:tts` | ⬜ |
 | P3-6 | 我的书（含首页 1/3 粘贴区） | 派 `ui` | `feature:library` | ⬜ |
@@ -131,3 +132,8 @@
 
 - 2026-11-16：**仓库落地**。`gh repo create zjh1934/shengye --public` 成功；但 `git push` 卡死（TCP/TLS 能连、数据发不出去）→ 改用 GitHub REST API 逐 blob 建提交，96 文件一次推上去（`2fc98715`）。固化 `tools/push_api.py`（幂等：内容没变就跳过；parent 取远端 main，线性前进不 force）。CI 首次运行失败在 `android-actions/setup-android@v3`，改为用 runner 预装 SDK 自补 `cmdline-tools`、Gradle 也改官方发行包自装，并把 `:core:domain:test` 排在 assembleDebug 之前。
   **P3 开工**：`core:domain` 落地 4 个纯逻辑文件——`ProduceMachine`（状态机，非法转移一律原地返回、暂停/停止期间迟到回调不推进进度）、`Progress`（**唯一进度口径**，pct + 一行运行态 + ETA）、`Chunker`（确定性分块，块边界必须稳定否则续跑错位）、`ResumePolicy`（6 种续跑原因判定，明确「哪些该弹窗、哪些只给常驻条」）+ 24 个单测。这块是本项目最容易出 bug 的地方，主对话亲自写，不外包。
+
+- 2026-11-16（续）：**CI 跑通并能发版**。修掉五道连环坑：`native` 是 Java 关键字（模块改名 `:platform:tts`）、`AppState.kt` 注释里的 `/*` 触发嵌套注释吞掉整个文件、`colors.xml` 注释含 `--`、11 个模块的 Java 1.8 与 Kotlin 17 target 不一致、`storedChunks` 表达式体带 `return`。全部写进 `contracts/PITFALLS.md`（现有 11 条，派活必附）。
+  **新增落地**：`design:glass` 4 文件（token / 主题 / 骨架 / 7 个通用展示组件）、`core:domain` 再加 `StorageLayout` + `ChapterSplitter`（+15 单测，共 39）、`core:data`（原子写 / book.json 编解码 / 书库，含 UTF-8·BOM·GBK 三路编码探测）、`contracts/STORAGE.md`。
+  **首包发布**：打 `v0.1.0-alpha1` → Actions 自动发 Release，`shengye-9e4d681.apk` 8.4 MB 已挂上。**这个包只有骨架**（四空间 tab + 首页粘贴区 + 毛玻璃），导入 / 合成 / 播放还没接，发它是为了真机确认毛玻璃观感，方向不对趁早改。
+  CI 现在：单测 → assembleDebug → artifact → tag 发 Release，全程约 2 分钟（已加 Gradle 缓存）。
