@@ -25,4 +25,6 @@ dependencies {
     api("androidx.compose.ui:ui-graphics")
     api("androidx.compose.foundation:foundation")
     api("androidx.compose.material3:material3")
+    // WindowCompat：状态栏/导航栏图标黑白跟随主题
+    implementation("androidx.core:core-ktx:1.13.1")
 }

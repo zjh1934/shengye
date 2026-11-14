@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 刘海屏：壁纸铺到挖孔区，否则顶部会出现一条黑边，毛玻璃直接破功。
+         内容避让由 design:glass 的 insets 负责，不用 Activity 自己算。 -->
+    <style name="Theme.Shengye" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:windowBackground">@color/wall</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:windowDrawsSystemBarBackgrounds">true</item>
+        <item name="android:windowLayoutInDisplayCutoutMode">shortEdges</item>
+    </style>
+</resources>

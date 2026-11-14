@@ -113,17 +113,24 @@ fun GlassCard(
     )
 }
 
-/** 页面顶栏：大标题 + 可选一行副标题 + 右侧文字动作。禁止纯图标无文字。 */
+/**
+ * 页面顶栏：大标题 + 可选一行副标题 + 右侧文字动作。禁止纯图标无文字。
+ *
+ * 默认自己吃状态栏高度。沉浸页（播放器全屏）传 `statusBarInset = false`，
+ * 由页面自己安排，避免两处各加一遍变成「标题悬在半空」。
+ */
 @Composable
 fun GlassTopBar(
     title: String,
     subtitle: String? = null,
+    statusBarInset: Boolean = true,
     action: (@Composable () -> Unit)? = null,
 ) {
     val c = Glass.colors
     Row(
         Modifier
             .fillMaxWidth()
+            .statusBarInset(statusBarInset)
             .padding(horizontal = Tokens.padScreen, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -154,36 +161,44 @@ fun GlassTopBar(
     }
 }
 
-/** 底部四空间。文字必须留，图标只是辅助。 */
+/**
+ * 底部四空间。文字必须留，图标只是辅助。
+ *
+ * 底色铺到屏幕最底（盖住手势条区域），文字/点击区避让导航栏——
+ * 否则要么底部露出壁纸一道缝，要么字被手势条压住。
+ */
 @Composable
 fun GlassTabs(
     selected: Int,
     onSelect: (Int) -> Unit,
     labels: List<String> = listOf("我的书", "这一本", "正在做", "正在听"),
+    navBarInset: Boolean = true,
 ) {
     val c = Glass.colors
-    Row(
-        Modifier
-            .fillMaxWidth()
-            .background(c.glassStrong)
-            .padding(vertical = 8.dp),
-        horizontalArrangement = Arrangement.SpaceEvenly,
-    ) {
-        labels.forEachIndexed { i, label ->
-            val on = i == selected
-            Column(
-                Modifier
-                    .clip(RoundedCornerShape(12.dp))
-                    .clickable { onSelect(i) }
-                    .padding(horizontal = 14.dp, vertical = 6.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-            ) {
-                Text(
-                    text = label,
-                    color = if (on) c.accent else c.tabInk,
-                    fontSize = Tokens.sub,
-                    fontWeight = if (on) FontWeight.SemiBold else FontWeight.Normal,
-                )
+    Box(Modifier.fillMaxWidth().background(c.glassStrong)) {
+        Row(
+            Modifier
+                .fillMaxWidth()
+                .navBarInset(navBarInset)
+                .padding(vertical = 8.dp),
+            horizontalArrangement = Arrangement.SpaceEvenly,
+        ) {
+            labels.forEachIndexed { i, label ->
+                val on = i == selected
+                Column(
+                    Modifier
+                        .clip(RoundedCornerShape(12.dp))
+                        .clickable { onSelect(i) }
+                        .padding(horizontal = 14.dp, vertical = 6.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                ) {
+                    Text(
+                        text = label,
+                        color = if (on) c.accent else c.tabInk,
+                        fontSize = Tokens.sub,
+                        fontWeight = if (on) FontWeight.SemiBold else FontWeight.Normal,
+                    )
+                }
             }
         }
     }
@@ -276,6 +291,52 @@ fun TextAction(text: String, color: Color, onClick: () -> Unit) {
             .clickable { onClick() }
             .padding(horizontal = 10.dp, vertical = 6.dp),
     )
+}
+
+/**
+ * 按钮。一屏最多一个 PRIMARY。
+ * GHOST 用于并列的次要动作，两个都是实心会互相抢。
+ */
+enum class ButtonKind { PRIMARY, GHOST }
+
+@Composable
+fun GlassButton(
+    text: String,
+    onClick: () -> Unit,
+    enabled: Boolean = true,
+    kind: ButtonKind = ButtonKind.PRIMARY,
+    modifier: Modifier = Modifier,
+) {
+    val c = Glass.colors
+    val ghost = kind == ButtonKind.GHOST
+    val shape = RoundedCornerShape(12.dp)
+    Box(
+        modifier
+            .clip(shape)
+            .background(
+                when {
+                    !enabled -> c.hair
+                    ghost -> c.glass
+                    else -> c.accent
+                }
+            )
+            .then(if (ghost) Modifier.border(1.dp, c.glassEdge, shape) else Modifier)
+            .then(if (enabled) Modifier.clickable { onClick() } else Modifier)
+            .padding(horizontal = if (ghost) 16.dp else 18.dp, vertical = 9.dp),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(
+            text,
+            color = when {
+                !enabled -> c.sub
+                ghost -> c.ink
+                else -> Color.White
+            },
+            fontSize = Tokens.body,
+            fontWeight = if (ghost) FontWeight.Medium else FontWeight.SemiBold,
+            maxLines = 1,
+        )
+    }
 }
 
 /** 一行放两个东西：左文右值。设置页、参数摘要反复用。 */

@@ -137,6 +137,15 @@ const U = {
     <div class="tk-txt"><b>${o.title}</b><span>${o.sub||''}</span></div>
     <span class="grow"></span>${o.right||''}</div>`, o.cls||'');
   },
+  /* 一张卡包多行（inset grouped）：书单、章节列表、设置分组都用它。
+     禁止一个列表每行各套一张卡 —— 卡片堆卡片，层级全塌。 */
+  list(rows,cls){return `<div class="card ${cls||'list'}">${(rows||[]).filter(Boolean).join('<div class="divider"></div>')}</div>`;
+  },
+  /* 列表行：书名 + 元信息 + 可选进度 + 右侧状态。无图标，纯文字。 */
+  trk(o){return `<div class="trk"><div class="tk-txt"><b>${o.title}</b>
+    <span>${o.sub||''}</span>${o.pct!=null?U.bar2(o.pct):''}</div>
+    <span class="grow"></span>${o.right||''}</div>`;
+  },
   /* 章节状态胶囊（统一词表，只允许 SPEC_CONTRACT.md 里的词） */
   stateChip(kind){const M={done:['可听','g'],running:['制作中','w'],queued:['排队中','line'],idle:['未开始','line'],failed:['失败','r'],paused:['已暂停','line']};
     const x=M[kind]||M.idle;return `<span class="chip ${x[1]}">${x[0]}</span>`;

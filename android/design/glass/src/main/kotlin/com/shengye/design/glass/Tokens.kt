@@ -117,6 +117,12 @@ object Tokens {
     val padCard: Dp = 14.dp
     val padScreen: Dp = 14.dp
 
+    /**
+     * 首页粘贴框高度。约两行半正文。
+     * 别按屏幕比例设——框撑满只会显空，粘贴这个动作不需要那么大的一块地。
+     */
+    val pasteBox: Dp = 72.dp
+
     // 模糊半径（仅 API 31+ 生效）
     val blurWall: Dp = 48.dp
     val blurBar: Dp = 26.dp

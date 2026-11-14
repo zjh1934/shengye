@@ -52,7 +52,7 @@ r = subprocess.run(['node', '--check', tmp], capture_output=True, text=True)
 if r.returncode != 0:
     raise SystemExit('JS 语法自检失败：\n' + r.stderr)
 
-ids = re.findall(r"id:'([A-H][0-9]+)'", screens)
+ids = re.findall(r"id:\s*'([A-H][0-9]+)'", screens)
 dups = sorted({x for x in ids if ids.count(x) > 1})
 print(f'构建完成 -> {OUT}  ({OUT.stat().st_size} bytes)')
 print(f'形态图 {len(ids)} 张 | 组 {sorted(set(i[0] for i in ids))} | 重复 id: {dups or "无"}')

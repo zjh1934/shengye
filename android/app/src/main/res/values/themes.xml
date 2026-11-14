@@ -1,8 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!--
+      窗口层只做三件事，其余视觉全在 Compose 里：
+      1. 底色给壁纸，避免启动瞬间白屏闪一下
+      2. 状态栏、导航栏全透明（edge-to-edge 的前提）
+      3. 画系统栏背景，让壁纸铺过去
+      图标黑白由 design:glass 的 SystemBarAppearance 跟主题同步，
+      这里不写 windowLightStatusBar，否则深色主题下时间和电量会看不见。
+      键盘行为写在 AndroidManifest 的 activity 上，theme 里没有这个属性。
+    -->
     <style name="Theme.Shengye" parent="android:Theme.Material.Light.NoActionBar">
         <item name="android:windowBackground">@color/wall</item>
         <item name="android:statusBarColor">@android:color/transparent</item>
-        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:windowDrawsSystemBarBackgrounds">true</item>
     </style>
 </resources>

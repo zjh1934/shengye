@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 深色窗口底色。图标颜色仍由 Compose 侧同步，这里只保证冷启动那一帧不是白闪。 -->
+    <style name="Theme.Shengye" parent="android:Theme.Material.NoActionBar">
+        <item name="android:windowBackground">@color/wall</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:windowDrawsSystemBarBackgrounds">true</item>
+    </style>
+</resources>

@@ -192,13 +192,20 @@ body[data-theme="dark"]{
 .modes>div.on{background:var(--accentSoft);color:var(--accent);font-weight:800}
 .field{border:1px solid var(--hair);border-radius:11px;padding:9px 10px;font-size:10.5px;color:var(--ink);
   background:rgba(255,255,255,.22);min-height:36px}
-.field.area{min-height:76px}.field .ph{color:var(--sub)}
+.field.area{min-height:47px}.field .ph{color:var(--sub)}
 .switch{width:28px;height:16px;border-radius:10px;background:var(--hair);position:relative;flex:0 0 auto}
 .switch:after{content:"";position:absolute;top:2px;left:2px;width:12px;height:12px;border-radius:50%;background:#fff;transition:.18s}
 .switch.on{background:var(--accent)}.switch.on:after{left:14px}
 .empty{text-align:center;padding:34px 10px;color:var(--sub);font-size:10.5px;line-height:1.7}
 .empty .ec{font-size:30px;opacity:.35;margin-bottom:8px}
 .empty .btn{margin:8px 4px 0}
+.list{padding:2px 12px}
+.trk{display:flex;align-items:flex-start;padding:11px 0;gap:8px}
+.trk .tk-txt{flex:1;min-width:0}
+.trk .tk-txt b{display:block;font-size:13.5px;font-weight:500;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.trk .tk-txt span{display:block;font-size:11px;color:var(--sub);margin-top:3px}
+.trk .tk-txt .bar{margin-top:6px;height:3px}
+.list>.divider{margin:0}
 .skel{display:flex;gap:8px;padding:9px 0;border-bottom:1px solid var(--hair)}
 .sbox{width:34px;height:34px;border-radius:8px;background:var(--hair);flex:0 0 auto}
 .sl{flex:1;display:flex;flex-direction:column;gap:5px;padding-top:3px}

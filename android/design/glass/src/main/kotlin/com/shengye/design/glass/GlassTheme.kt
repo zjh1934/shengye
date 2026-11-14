@@ -42,6 +42,8 @@ fun ShengyeTheme(
         LocalGlass provides colors,
         LocalBlurSupported provides blur,
     ) {
+        // 状态栏/导航栏图标跟着主题走，否则深色壁纸下时间电量看不见
+        SystemBarAppearance(dark = useDark)
         MaterialTheme(
             colorScheme = if (useDark) darkColorScheme() else lightColorScheme(),
             content = content,
