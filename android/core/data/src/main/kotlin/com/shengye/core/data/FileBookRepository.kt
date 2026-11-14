@@ -109,8 +109,10 @@ class FileBookRepository(private val root: File) : BookRepository {
     }
 
     /** 供 :core:audio 用：拿到某一章的块文本与指纹，续跑时逐块比对。 */
-    fun storedChunks(id: String): StoredBook? =
-        BookJson.decode(Files2.readTextOrNull(f(StorageLayout.bookJson(id))) ?: return null)
+    fun storedChunks(id: String): StoredBook? {
+        val text = Files2.readTextOrNull(f(StorageLayout.bookJson(id))) ?: return null
+        return BookJson.decode(text)
+    }
 
     private fun newId(): String =
         UUID.randomUUID().toString().replace("-", "").lowercase().take(16)
