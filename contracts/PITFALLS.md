@@ -71,3 +71,29 @@ for p in pathlib.Path('.').rglob('*.kt'):
 **现象**：旧版同一个意思有 6 套叫法；新代码里一度把「导入中」写成「制作中」。
 
 **正确做法**：所有对外可见的状态词只从 `contracts/STATE_VOCAB.md` 与 `contract/src/.../AppState.kt` 的枚举里取。导入不是制作，用导入态。改一个词要同步契约与 `roles/*.md`。
+
+## 9. XML 注释里不能出现 `--`
+
+**现象**：资源合并失败——`The string "--" is not permitted within comments`。注释里写了 `GLASS_TOKENS.md 的 --wall1 / --accent`，那两个连字符直接让 build 挂掉。
+
+**正确做法**：XML 注释里不要写双连字符，去掉前缀只写 `wall1 / accent`。
+
+**自查**：
+
+```bash
+cd android && python3 -c "
+import pathlib,re
+for p in pathlib.Path('.').rglob('*.xml'):
+    s=p.read_text(encoding='utf-8',errors='replace')
+    for m in re.finditer(r'<!--(.*?)-->', s, re.S):
+        if '--' in m.group(1): print(p, m.group(1)[:60])
+"
+```
+
+## 10. 中文正则里别加 `\b`
+
+**现象**：分章正则写了 `第X章\b`，结果一章都识别不出来。
+
+**根因**：Java 正则的 `\b` 基于 `\w`（字母数字下划线），中文字符不算 `\w`，所以「章」和后面的空格之间**没有**词边界，`\b` 永远不成立。
+
+**正确做法**：中文匹配不要用 `\b`，靠 `^` 行首 + 明确的字符类来限定。

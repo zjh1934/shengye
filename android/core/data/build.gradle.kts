@@ -3,4 +3,6 @@ android { namespace = "com.shengye.core.data"; compileSdk = 35
     defaultConfig { minSdk = 26 } }
 dependencies {
     implementation(project(":core:contract"))
+    implementation(project(":core:domain"))
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0")
 }
