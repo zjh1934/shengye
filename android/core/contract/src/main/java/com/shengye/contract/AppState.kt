@@ -2,7 +2,7 @@ package com.shengye.contract
 
 /** ★ 全 App 唯一状态词表：枚举 + 文案一处定义。
  *  界面 / 通知 / 悬浮球 / 日志对外只准用这里，禁止自己拼词。
- *  逐字对应 contracts/STATE_VOCAB.md；改一个字要过总工程师并同步 roles/*.md。 */
+ *  逐字对应 contracts/STATE_VOCAB.md；改一个字要过总工程师并同步 roles 下各档案。 */
 
 enum class TaskState(val label: String) {
     QUEUED("排队中"), PREPARING("准备中"), RUNNING("制作中"),

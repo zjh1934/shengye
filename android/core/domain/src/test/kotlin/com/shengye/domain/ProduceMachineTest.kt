@@ -158,9 +158,9 @@ class ProduceMachineTest {
 
     @Test
     fun `样本不足时不估时间`() {
-        assertEquals(0L, Progress.etaMs(0, 10, 5000))
-        assertEquals(0L, Progress.etaMs(3, 3, 5000))
-        assertTrue(Progress.etaMs(2, 10, 20_000) > 0)
+        assertEquals(0L, Progress.etaMs(0, 10, 5000L))
+        assertEquals(0L, Progress.etaMs(3, 3, 5000L))
+        assertTrue(Progress.etaMs(2, 10, 20_000L) > 0)
     }
 
     // ── 分块 ────────────────────────────────────────────────────
@@ -176,7 +176,7 @@ class ProduceMachineTest {
 
     @Test
     fun `分块不超上限也不出空块`() {
-        val text = ("很长的一段话，" .repeat(200))
+        val text = "很长的一段话，".repeat(200)
         val chunks = Chunker.split(text, target = 60, max = 100)
         assertTrue(chunks.isNotEmpty())
         for (c in chunks) {

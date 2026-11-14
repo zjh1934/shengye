@@ -8,7 +8,7 @@ package com.shengye.domain
 object Chunker {
 
     private val PARA = Regex("\\n\\s*\\n")
-    private val SENT_END = setOf('。', '！', '？', '…', '；', '!', '?', ';', '\\n'.first())
+    private val SENT_END = setOf('。', '！', '？', '…', '；', '!', '?', ';', '\n')
     private val SOFT_END = setOf('，', '、', ',', '：', ':', '—', '~')
 
     /** target 是理想块长，max 是硬上限（含）。 */
