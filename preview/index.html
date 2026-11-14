@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>声页 · 重做方向原型（毛玻璃）</title>
+<style>
+:root{
+  --accent:#4F46E5; --accentSoft:#EEF0FE; --good:#0E9F6E; --warn:#B45309;
+  --ink:#1B2030; --sub:#6B7280; --hair:rgba(27,32,48,.10);
+  --glass:rgba(255,255,255,.55); --glassEdge:rgba(255,255,255,.80);
+  --shadow:0 12px 34px rgba(31,38,80,.14), inset 0 1px 0 rgba(255,255,255,.95);
+  --wall1:#DCE3F6; --wall2:#EAD9F2; --wall3:#CFEAF3;
+  --orbA:#7C6BFF; --orbB:#FF6FB5; --orbC:#46C8FF; --orbD:#FFB15C; --orbO:.55;
+  --tabInk:#8A90A6;
+}
+body[data-theme="dark"]{
+  --accent:#A5B4FC; --accentSoft:#313C63; --good:#34D399; --warn:#FBBF24;
+  --ink:#FFFFFF; --sub:rgba(255,255,255,.62); --hair:rgba(255,255,255,.12);
+  --glass:rgba(24,29,48,.52); --glassEdge:rgba(255,255,255,.16);
+  --shadow:0 14px 40px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.10);
+  --wall1:#0E1117; --wall2:#1B1630; --wall3:#101E2B;
+  --orbA:#5B4BE0; --orbB:#C2448C; --orbC:#1E7FB0; --orbD:#B5742A; --orbO:.42;
+  --tabInk:rgba(255,255,255,.45);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","PingFang SC","Segoe UI",Roboto,sans-serif;
+  background:#0B0D14; color:#E8EBF5; min-height:100vh;
+  -webkit-font-smoothing:antialiased;
+}
+.page-bg{position:fixed;inset:0;z-index:0;overflow:hidden;
+  background:radial-gradient(120% 90% at 15% 0%,#1a1f3a 0%,#0B0D14 60%),#0B0D14}
+.page-bg .o{position:absolute;border-radius:50%;filter:blur(90px);opacity:.35}
+.page-bg .o1{width:520px;height:520px;left:-80px;top:-120px;background:#4338CA}
+.page-bg .o2{width:460px;height:460px;right:-60px;top:10%;background:#B0448C}
+.page-bg .o3{width:420px;height:420px;left:35%;bottom:-160px;background:#1E6FA0}
+.wrap{position:relative;z-index:1;max-width:1280px;margin:0 auto;padding:22px 20px 60px}
+
+/* 预览工具条（App 之外，不是软件界面） */
+.topbar{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:20px}
+.brand{display:flex;align-items:baseline;gap:10px}
+.brand b{font-size:19px;letter-spacing:.3px}
+.brand span{font-size:12px;color:#9AA1BD}
+.tools{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
+.tool{font:inherit;font-size:12.5px;color:#E8EBF5;cursor:pointer;
+  padding:8px 14px;border-radius:12px;border:1px solid rgba(255,255,255,.18);
+  background:rgba(255,255,255,.08);backdrop-filter:blur(14px);transition:.15s}
+.tool:hover{background:rgba(255,255,255,.16)}
+.tool.on{background:#4338CA;border-color:#4338CA;color:#fff}
+
+.stage{display:flex;flex-wrap:wrap;gap:30px;justify-content:center;align-items:flex-start}
+#stage[data-mode="single"] .phone:not(.on){display:none}
+
+/* 设备 */
+.phone{
+  position:relative;width:390px;height:844px;flex:0 0 auto;
+  border-radius:52px;overflow:hidden;isolation:isolate;
+  border:9px solid #0C0E16;
+  box-shadow:0 30px 70px rgba(0,0,0,.55),0 0 0 1px rgba(255,255,255,.14) inset;
+}
+#stage[data-mode="grid"] .phone{zoom:.5}
+.wall{position:absolute;inset:0;z-index:0;
+  background:
+    radial-gradient(90% 60% at 20% 8%,var(--wall2),transparent 60%),
+    radial-gradient(90% 70% at 95% 40%,var(--wall3),transparent 62%),
+    linear-gradient(160deg,var(--wall1),var(--wall2));}
+.wall .orb{position:absolute;border-radius:50%;filter:blur(52px);opacity:var(--orbO)}
+.wall .a{width:260px;height:260px;left:-70px;top:-40px;background:var(--orbA)}
+.wall .b{width:220px;height:220px;right:-60px;top:120px;background:var(--orbB)}
+.wall .c{width:250px;height:250px;left:-40px;bottom:60px;background:var(--orbC)}
+.wall .d{width:180px;height:180px;right:-30px;bottom:-40px;background:var(--orbD)}
+
+/* 状态栏 */
+.sb{position:relative;z-index:3;height:52px;display:flex;align-items:center;
+  justify-content:space-between;padding:14px 30px 0;color:var(--ink);font-size:14px;font-weight:700}
+.sb .r{display:flex;gap:6px;align-items:center;opacity:.9}
+.notch{position:absolute;z-index:4;top:9px;left:50%;transform:translateX(-50%);
+  width:118px;height:30px;border-radius:18px;background:#0C0E16}
+
+/* 玻璃卡 */
+.g{background:var(--glass);border:1px solid var(--glassEdge);
+  box-shadow:var(--shadow);backdrop-filter:blur(22px) saturate(180%);
+  -webkit-backdrop-filter:blur(22px) saturate(180%);border-radius:22px}
+
+/* 内容区 */
+.screen{position:relative;z-index:2;height:calc(844px - 52px - 96px);
+  padding:6px 20px 0;overflow:hidden}
+.hd{display:flex;align-items:center;gap:10px;margin:6px 2px 16px}
+.hd h1{margin:0;font-size:27px;font-weight:800;letter-spacing:.2px;color:var(--ink);flex:1}
+.icb{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;
+  cursor:pointer;color:var(--ink);background:var(--glass);border:1px solid var(--glassEdge);
+  box-shadow:var(--shadow);backdrop-filter:blur(18px);flex:0 0 36px}
+.icb svg{width:17px;height:17px}
+.card{padding:16px;margin-bottom:12px}
+.row{display:flex;align-items:center;gap:10px}
+.grow{flex:1}
+.t{color:var(--ink)}
+.b{font-weight:800}
+.s{font-size:11.5px;color:var(--sub)}
+.p{color:var(--accent)}
+.big{font-size:16px;font-weight:800}
+.bar{height:6px;border-radius:6px;background:var(--hair);overflow:hidden;margin:9px 0 3px}
+.bar>i{display:block;height:100%;border-radius:6px;background:var(--accent)}
+.chip{font-size:10.5px;font-weight:700;padding:4px 10px;border-radius:20px;
+  background:var(--accentSoft);color:var(--accent);white-space:nowrap}
+.chip.g{background:rgba(14,159,110,.16);color:var(--good)}
+.chip.w{background:rgba(180,83,9,.16);color:var(--warn)}
+.chip.l{background:transparent;border:1px solid var(--hair);color:var(--sub)}
+.btn{font-size:13px;font-weight:700;text-align:center;padding:11px 14px;border-radius:14px;cursor:pointer}
+.btn.pri{background:var(--accent);color:#fff;box-shadow:0 6px 18px rgba(79,70,229,.35)}
+.btn.gh{background:transparent;border:1px solid var(--hair);color:var(--ink)}
+.btn.sm{padding:8px 12px;font-size:12px;border-radius:12px}
+.cover{width:56px;height:70px;border-radius:12px;flex:0 0 56px;display:grid;place-items:center;
+  font-size:22px;color:#fff;font-weight:800;box-shadow:0 6px 16px rgba(0,0,0,.22)}
+.cv1{background:linear-gradient(150deg,#6D5EF0,#A44BD6)}
+.cv2{background:linear-gradient(150deg,#2E9C8E,#3E7BD6)}
+.cv3{background:linear-gradient(150deg,#D67A45,#B0437A)}
+.divider{height:1px;background:var(--hair);margin:11px 0}
+
+/* 迷你播放条 + tabbar */
+.dock{position:absolute;z-index:5;left:12px;right:12px;bottom:12px}
+.mini{display:flex;align-items:center;gap:10px;padding:9px 13px;margin-bottom:9px;border-radius:17px}
+.mini .note{width:30px;height:30px;border-radius:9px;background:var(--accentSoft);
+  color:var(--accent);display:grid;place-items:center;flex:0 0 30px}
+.tabs{display:flex;padding:9px 6px 8px;border-radius:26px;justify-content:space-around}
+.tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;
+  color:var(--tabInk);font-size:10px;font-weight:600;cursor:pointer;padding:3px 0}
+.tab svg{width:21px;height:21px}
+.tab.on{color:var(--accent)}
+.tab.on svg{filter:drop-shadow(0 2px 6px rgba(79,70,229,.4))}
+
+/* 播放器大控件 */
+.playwrap{text-align:center;padding:20px 16px 16px}
+.bigcover{width:190px;height:190px;border-radius:30px;margin:4px auto 20px;
+  display:grid;place-items:center;font-size:76px;color:#fff;
+  background:linear-gradient(150deg,#6D5EF0,#C24B9E);
+  box-shadow:0 22px 46px rgba(80,50,180,.4),inset 0 1px 0 rgba(255,255,255,.35)}
+.ctrls{display:flex;align-items:center;justify-content:center;gap:26px;margin:16px 0}
+.ctrl{color:var(--ink);opacity:.85;cursor:pointer}
+.playbtn{width:66px;height:66px;border-radius:50%;background:var(--accent);color:#fff;
+  display:grid;place-items:center;box-shadow:0 12px 26px rgba(79,70,229,.45);cursor:pointer}
+.speeds{display:flex;gap:8px;justify-content:center;margin-top:6px}
+.sp{font-size:12px;font-weight:700;padding:7px 12px;border-radius:11px;color:var(--sub)}
+.sp.on{background:var(--accent);color:#fff}
+
+/* 调音台 sheet */
+.mixer{position:absolute;z-index:9;left:0;right:0;bottom:0;height:78%;
+  border-radius:30px 30px 0 0;padding:18px 20px 24px;display:none;
+  background:var(--glass);border-top:1px solid var(--glassEdge);
+  box-shadow:0 -18px 50px rgba(0,0,0,.28);backdrop-filter:blur(30px) saturate(180%);
+  -webkit-backdrop-filter:blur(30px) saturate(180%)}
+.mixer.on{display:block}
+.grab{width:38px;height:5px;border-radius:4px;background:var(--sub);opacity:.4;margin:0 auto 16px}
+.segs{display:flex;gap:6px;background:var(--hair);padding:4px;border-radius:13px;margin-bottom:16px}
+.seg{flex:1;text-align:center;font-size:12px;font-weight:700;padding:8px 0;border-radius:10px;color:var(--sub)}
+.seg.on{background:var(--glass);color:var(--ink);box-shadow:var(--shadow)}
+.param{margin:13px 0}
+.slider{height:5px;border-radius:5px;background:var(--hair);position:relative;margin-top:9px}
+.slider i{position:absolute;left:0;top:0;bottom:0;width:62%;border-radius:5px;background:var(--accent)}
+.slider b{position:absolute;left:62%;top:50%;transform:translate(-50%,-50%);
+  width:16px;height:16px;border-radius:50%;background:#fff;box-shadow:0 2px 6px rgba(0,0,0,.3)}
+.home{position:absolute;z-index:10;bottom:7px;left:50%;transform:translateX(-50%);
+  width:126px;height:5px;border-radius:4px;background:var(--ink);opacity:.35}
+
+/* 底部说明卡（预览说明，非 App 内） */
+.notes{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px;margin-top:38px}
+.note-c{padding:16px 18px;border-radius:18px;background:rgba(255,255,255,.07);
+  border:1px solid rgba(255,255,255,.14);backdrop-filter:blur(16px)}
+.note-c h4{margin:0 0 7px;font-size:13.5px;color:#fff}
+.note-c p{margin:0;font-size:12px;line-height:1.7;color:#AEB5CF}
+.legend{font-size:11.5px;color:#8A90A6;margin-top:16px;text-align:center;line-height:1.7}
+</style>
+</head>
+<body>
+<div class="page-bg"><div class="o o1"></div><div class="o o2"></div><div class="o o3"></div></div>
+<div class="wrap">
+  <div class="topbar">
+    <div class="brand"><b>声页 · 重做方向</b><span>苹果毛玻璃主题 · 代码绘制原型 · 可交互</span></div>
+    <div class="tools">
+      <button class="tool" id="themeBtn">切深色</button>
+      <button class="tool on" id="modeBtn">平铺看全</button>
+    </div>
+  </div>
+
+  <div class="stage" id="stage" data-mode="single"></div>
+
+  <div class="notes">
+    <div class="note-c"><h4>毛玻璃</h4><p>背景光斑 + 半透明卡 + 背景模糊 + 细边 + 柔和阴影。视觉 token 只在一处定义，深浅色各一套；低端机自动降级为半透明纯色，不影响功能。</p></div>
+    <div class="note-c"><h4>不啰嗦</h4><p>界面只剩运行状态：在做什么、第几步、百分比、还剩多少、能点什么。删掉所有「怎么念 / 怎么跑 / 改一次会怎样」的教程型文字。</p></div>
+    <div class="note-c"><h4>职责分开</h4><p>我的书 / 这一本 / 正在做 / 正在听 四个空间各管一件事；任务与音频成品不再混列，运行状态全 App 只有一处来源。</p></div>
+    <div class="note-c"><h4>模块化</h4><p>模块边界 = 角色边界 = 档案边界。改视觉只动设计系统，改合成只动内核，改一页不动其它页——后期不牵一发而动全身。</p></div>
+  </div>
+  <div class="legend">这是方向基线，不是成品。确认方向后按分工逐模块落到 Kotlin 工程 · 旧码只读保留作功能比对 · 本轮未改动任何原码</div>
+</div>
+
+<script>
+const I={
+  back:'<path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>',
+  plus:'<path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>',
+  mixer:'<path d="M4 7h10M18 7h2M4 17h2M10 17h10M14 4v6M8 14v6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>',
+  book:'<path d="M4 5.5A2.5 2.5 0 016.5 3H20v16H6.5A2.5 2.5 0 004 21.5zM4 5.5v16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>',
+  list:'<path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>',
+  wave:'<path d="M3 12h2l2-6 3 12 3-9 2 5 2-3h4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>',
+  play:'<path d="M8 5l11 7-11 7z" fill="currentColor"/>',
+  pause:'<path d="M8 5h3v14H8zM14 5h3v14h-3z" fill="currentColor"/>',
+  note:'<path d="M9 18V5l10-2v13M9 18a3 3 0 11-3-3 3 3 0 013 3zM19 16a3 3 0 11-3-3 3 3 0 013 3z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>',
+  prev:'<path d="M6 5v14M19 5l-10 7 10 7z" fill="currentColor"/>',
+  next:'<path d="M18 5v14M5 5l10 7-10 7z" fill="currentColor"/>',
+  head:'<path d="M4 14v-2a8 8 0 0116 0v2M4 14a2 2 0 012 2v2a2 2 0 01-2 2 2 2 0 01-2-2v-2a2 2 0 012-2zM20 14a2 2 0 012 2v2a2 2 0 01-2 2 2 2 0 01-2-2v-2a2 2 0 012-2z" fill="none" stroke="currentColor" stroke-width="1.8"/>',
+  eye:'<path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6z" fill="none" stroke="currentColor" stroke-width="1.7"/><circle cx="12" cy="12" r="2.6" fill="none" stroke="currentColor" stroke-width="1.7"/>',
+  sun:'<circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5L19 19M19 5l-1.5 1.5M6.5 17.5L5 19" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>',
+};
+const svg=(k,sz)=>`<svg viewBox="0 0 24 24" width="${sz||20}" height="${sz||20}">${I[k]}</svg>`;
+const bar=(p)=>`<div class="bar"><i style="width:${p}%"></i></div>`;
+
+const TABS=[
+  {id:'library',name:'我的书',icon:'book'},
+  {id:'book',name:'这一本',icon:'list'},
+  {id:'tasks',name:'正在做',icon:'wave'},
+  {id:'player',name:'正在听',icon:'head'},
+];
+
+function head(title,right){
+  return `<div class="hd"><h1>${title}</h1>${right||''}</div>`;
+}
+const icMixer=`<div class="icb" onclick="toggleMixer(this)">${svg('mixer')}</div>`;
+const icPlus=`<div class="icb" onclick="">${svg('plus')}</div>`;
+
+/* ---------- 各空间 ---------- */
+function library(){
+  return head('我的书',icPlus+icMixer)+`
+   <div class="card g">
+     <div class="row"><span class="t b">正在做《山那边》</span><span class="grow"></span><span class="t p b">42%</span></div>
+     <div class="s" style="margin:3px 0 2px">第 2 章 · 还剩约 6 分钟</div>
+     ${bar(42)}
+   </div>
+   <div class="s" style="margin:16px 2px 9px">我的书 · 3</div>
+   <div class="card g"><div class="row">
+     <div class="cover cv1">山</div>
+     <div class="grow"><div class="t b">山那边</div><div class="s" style="margin:3px 0 5px">已能听 3 章 · 12 章</div>${bar(25)}</div>
+     <span class="chip w">制作中</span>
+   </div></div>
+   <div class="card g"><div class="row">
+     <div class="cover cv2">夜</div>
+     <div class="grow"><div class="t b">夜航</div><div class="s" style="margin:3px 0">已能听 12 章</div></div>
+     <span class="chip g">可听</span>
+   </div></div>
+   <div class="card g"><div class="row">
+     <div class="cover cv3">旧</div>
+     <div class="grow"><div class="t b">旧巷钟声</div><div class="s" style="margin:3px 0">还没开始</div></div>
+     <span class="chip l">未开始</span>
+   </div></div>`;
+}
+function book(){
+  return head('山那边',`<div class="icb">${svg('back')}</div>`+icMixer)+`
+   <div class="card g">
+     <div class="row"><span class="t b">已能听 3 / 12 章</span><span class="grow"></span><span class="t p b">25%</span></div>
+     ${bar(25)}
+     <div class="row" style="margin-top:13px">
+       <div class="btn pri sm" style="flex:1">接着听 12:03</div>
+       <div class="btn gh sm" style="flex:1">制作这一本 ›</div>
+     </div>
+   </div>
+   <div class="s" style="margin:16px 2px 9px">章节</div>
+   <div class="card g" style="padding:6px 14px">
+     <div class="row" style="padding:11px 0"><span class="t b grow">1. 起风了</span><span class="chip g">可听</span><span style="color:var(--accent)">${svg('head',18)}</span></div>
+     <div class="divider" style="margin:0"></div>
+     <div class="row" style="padding:11px 0"><span class="t b grow">2. 山那边</span><span class="chip w">制作中 42%</span><span style="color:var(--sub)">${svg('eye',18)}</span></div>
+     <div class="divider" style="margin:0"></div>
+     <div class="row" style="padding:11px 0"><span class="t b grow">3. 回程</span><span class="chip l">未开始</span><span style="color:var(--sub)">${svg('eye',18)}</span></div>
+   </div>`;
+}
+function tasks(){
+  return head('正在做',icMixer)+`
+   <div class="card g" style="border-left:3px solid var(--accent)">
+     <div class="row"><span class="t b">正在做《山那边》</span><span class="grow"></span><span class="t p b">42%</span></div>
+     <div class="s" style="margin:4px 0 8px">第 2 章 · 还剩约 6 分钟</div>
+     ${bar(42)}
+     <div class="row" style="margin-top:13px"><div class="btn gh sm" style="flex:1">暂停</div><div class="btn pri sm" style="flex:1">看进度 ›</div></div>
+   </div>
+   <div class="s" style="margin:16px 2px 9px">进行中 1 · 排队 2</div>
+   <div class="card g"><div class="row"><span class="t b grow">整本《夜航》· 12 章</span><span class="chip l">排队中</span></div></div>
+   <div class="card g"><div class="row"><span class="t b grow">选中 3 章 ·《旧巷钟声》</span><span class="chip l">排队中</span></div></div>
+   <div class="card g" style="margin-top:16px;cursor:pointer" onclick="">
+     <div class="row"><span class="t b">我的音频 · 3 个成品</span><span class="grow"></span><span class="t p b">查看 ›</span></div>
+     <div class="s" style="margin-top:4px">成品与任务分开</div>
+   </div>`;
+}
+function player(){
+  return head('正在听',`<div class="icb">${svg('back')}</div>`+icMixer)+`
+   <div class="playwrap">
+     <div class="bigcover">♪</div>
+     <div class="t b" style="font-size:21px">山那边</div>
+     <div class="s" style="margin:5px 0 2px">第 2 章 · 全书第 2/12 章</div>
+     <div class="s">整本还剩 1:24:06</div>
+     <div style="margin:18px 4px 5px">${bar(38)}</div>
+     <div class="row"><span class="s">05:03</span><span class="grow"></span><span class="s">-07:01</span></div>
+     <div class="ctrls">
+       <span class="ctrl">${svg('prev',26)}</span>
+       <span class="playbtn">${svg('pause',26)}</span>
+       <span class="ctrl">${svg('next',26)}</span>
+     </div>
+     <div class="speeds"><span class="sp">0.75×</span><span class="sp on">1.0×</span><span class="sp">1.25×</span><span class="sp">1.5×</span><span class="sp">2.0×</span></div>
+     <div class="card g" style="margin-top:16px;text-align:left"><div class="row"><span class="t b">播放队列 · 12 章</span><span class="grow"></span><span class="t p b">展开 ›</span></div></div>
+   </div>`;
+}
+const BODY={library,book,tasks,player};
+
+function mixerSheet(){
+  return `<div class="mixer" onclick="event.stopPropagation()">
+    <div class="grab"></div>
+    <div class="row" style="margin-bottom:14px"><span class="t big grow">调音台</span><span class="chip g">已存配置</span></div>
+    <div class="segs"><div class="seg on">描述音色</div><div class="seg">角色音色</div><div class="seg">参考音色</div></div>
+    <div class="param"><div class="row"><span class="t s grow">语速</span><span class="t p b">1.0</span></div><div class="slider"><i></i><b></b></div></div>
+    <div class="param"><div class="row"><span class="t s grow">音高</span><span class="t p b">0</span></div><div class="slider"><i style="width:45%"></i><b style="left:45%"></b></div></div>
+    <div class="param"><div class="row"><span class="t s grow">音量</span><span class="t p b">1.0</span></div><div class="slider"><i style="width:70%"></i><b style="left:70%"></b></div></div>
+    <div class="row" style="margin-top:18px"><div class="btn gh sm" style="flex:1">试听 · 已存</div><div class="btn pri sm" style="flex:1">保存设置</div></div>
+  </div>`;
+}
+
+function miniBar(){
+  return `<div class="mini g">
+    <div class="note">${svg('note',16)}</div>
+    <div class="grow"><div class="t b" style="font-size:12.5px">第 2 章 · 山那边</div><div class="s">70s / 168s</div></div>
+    <span class="chip" style="font-size:10px">1.0×</span>
+    <span style="color:var(--accent)">${svg('play',20)}</span>
+  </div>`;
+}
+function tabBar(active){
+  return `<div class="tabs g">`+TABS.map(t=>
+    `<div class="tab ${t.id===active?'on':''}" onclick="onTab('${t.id}',this)">${svg(t.icon)}<span>${t.name}</span></div>`
+  ).join('')+`</div>`;
+}
+
+function phoneHTML(tab){
+  const isPlayer=tab==='player';
+  return `<div class="phone" data-tab="${tab}">
+    <div class="wall"><div class="orb a"></div><div class="orb b"></div><div class="orb c"></div><div class="orb d"></div></div>
+    <div class="notch"></div>
+    <div class="sb"><span>9:41</span><div class="r">${svg('sun',15)}<span style="font-size:12px">▮</span></div></div>
+    <div class="screen">${BODY[tab]()}</div>
+    <div class="dock">
+      ${isPlayer?'':miniBar()}
+      ${tabBar(tab)}
+    </div>
+    ${mixerSheet()}
+    <div class="home"></div>
+  </div>`;
+}
+
+const stage=document.getElementById('stage');
+let activeTab='library';
+let mode='single';
+
+function build(){
+  // 单机模式渲染 4 个可切换；另给 grid 模式加一个"调音台展开"的第 5 屏
+  stage.innerHTML=TABS.map(t=>phoneHTML(t.id)).join('')+phoneHTML('player').replace('data-tab="player"','data-tab="mixer"');
+  applyMode();
+}
+function applyMode(){
+  stage.dataset.mode=mode;
+  const phones=[...stage.querySelectorAll('.phone')];
+  phones.forEach(p=>{
+    const isMixer=p.dataset.tab==='mixer';
+    if(mode==='single'){
+      p.classList.toggle('on',!isMixer && p.dataset.tab===activeTab);
+      if(!isMixer) p.querySelector('.mixer').classList.remove('on');
+    }else{
+      p.classList.add('on');
+      if(isMixer) p.querySelector('.mixer').classList.add('on');
+    }
+  });
+}
+function onTab(id,el){
+  if(mode==='grid'){ setMode('single'); }
+  activeTab=id; applyMode();
+}
+function toggleMixer(el){ el.closest('.phone').querySelector('.mixer').classList.toggle('on'); }
+function setMode(m){
+  mode=m;
+  document.getElementById('modeBtn').textContent = m==='grid'?'单屏交互':'平铺看全';
+  document.getElementById('modeBtn').classList.toggle('on', m==='grid');
+  applyMode();
+}
+document.getElementById('modeBtn').onclick=()=>setMode(mode==='grid'?'single':'grid');
+document.getElementById('themeBtn').onclick=()=>{
+  const d=document.body.dataset.theme==='dark'?'light':'dark';
+  document.body.dataset.theme=d;
+  document.getElementById('themeBtn').textContent=d==='dark'?'切浅色':'切深色';
+};
+build();
+setMode('grid');
+</script>
+</body>
+</html>

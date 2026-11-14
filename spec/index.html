@@ -1,0 +1,1588 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>声页 · 重做后界面规格（代码绘制）</title>
+<style>
+/* ===== 报告外壳（不是软件界面） ===== */
+:root{--page:#0B0D14;--pageInk:#E8EBF5;--pageSub:#9AA1BD;--hair2:rgba(255,255,255,.14)}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","PingFang SC","Segoe UI",Roboto,sans-serif;
+  background:var(--page);color:var(--pageInk);min-height:100vh;-webkit-font-smoothing:antialiased}
+.page-bg{position:fixed;inset:0;z-index:0;overflow:hidden;
+  background:radial-gradient(120% 90% at 12% 0%,#1a1f3a 0%,#0B0D14 62%),#0B0D14}
+.page-bg .o{position:absolute;border-radius:50%;filter:blur(90px);opacity:.32}
+.page-bg .o1{width:520px;height:520px;left:-90px;top:-140px;background:#4338CA}
+.page-bg .o2{width:460px;height:460px;right:-70px;top:8%;background:#B0448C}
+.page-bg .o3{width:420px;height:420px;left:38%;bottom:-180px;background:#1E6FA0}
+.wrap{position:relative;z-index:1;max-width:1360px;margin:0 auto;padding:20px 18px 70px}
+.topbar{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:14px}
+.brand b{font-size:19px;letter-spacing:.3px}.brand span{font-size:12px;color:var(--pageSub);margin-left:8px}
+.tools{margin-left:auto;display:flex;gap:7px;flex-wrap:wrap;align-items:center}
+.tool{font:inherit;font-size:12px;color:var(--pageInk);cursor:pointer;padding:7px 12px;border-radius:11px;
+  border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.07);backdrop-filter:blur(12px);transition:.15s}
+.tool:hover{background:rgba(255,255,255,.15)}.tool.on{background:#4338CA;border-color:#4338CA;color:#fff}
+.qbox{font:inherit;font-size:12px;color:var(--pageInk);padding:7px 11px;border-radius:11px;width:150px;
+  border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.06);outline:none}
+.legendbar{display:flex;gap:7px;flex-wrap:wrap;margin:0 0 18px}
+.gtag{font-size:11.5px;padding:5px 11px;border-radius:9px;border:1px solid rgba(255,255,255,.16);
+  color:var(--pageSub);cursor:pointer;background:rgba(255,255,255,.04)}
+.gtag.on{background:rgba(165,180,252,.20);border-color:rgba(165,180,252,.55);color:#EEF0FF}
+.note{font-size:12.5px;color:var(--pageSub);line-height:1.7;margin:0 0 16px;max-width:900px}
+.note b{color:var(--pageInk)}
+
+/* ===== 图册网格 ===== */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(268px,1fr));gap:20px;align-items:start}
+.shot{max-width:308px}
+.shot-hd{display:flex;align-items:baseline;gap:7px;margin:0 0 8px;flex-wrap:wrap}
+.shot-id{font-size:11px;font-weight:800;color:#A5B4FC;letter-spacing:.5px}
+.shot-nm{font-size:12.5px;font-weight:700;color:var(--pageInk)}
+.shot-meta{font-size:11px;color:var(--pageSub);line-height:1.6;margin:8px 2px 0}
+.shot-meta b{color:#C7CEE8;font-weight:600}
+.shot-meta .src{opacity:.75}
+
+/* ===== 手机（软件界面）===== */
+:root{
+  --accent:#4F46E5;--accentSoft:#EEF0FE;--good:#0E9F6E;--warn:#B45309;--bad:#DC2626;
+  --ink:#1B2030;--sub:#6B7280;--hair:rgba(27,32,48,.10);
+  --glass:rgba(255,255,255,.58);--glassEdge:rgba(255,255,255,.85);
+  --shadow:0 10px 26px rgba(31,38,80,.13),inset 0 1px 0 rgba(255,255,255,.95);
+  --wall1:#DCE3F6;--wall2:#EAD9F2;--wall3:#CFEAF3;
+  --orbA:#7C6BFF;--orbB:#FF6FB5;--orbC:#46C8FF;--orbD:#FFB15C;--orbO:.55;
+  --tabInk:#8A90A6;--onAccent:#fff;
+}
+body[data-theme="dark"]{
+  --accent:#A5B4FC;--accentSoft:#313C63;--good:#34D399;--warn:#FBBF24;--bad:#F87171;
+  --ink:#FFFFFF;--sub:rgba(255,255,255,.62);--hair:rgba(255,255,255,.12);
+  --glass:rgba(24,29,48,.56);--glassEdge:rgba(255,255,255,.16);
+  --shadow:0 12px 32px rgba(0,0,0,.46),inset 0 1px 0 rgba(255,255,255,.10);
+  --wall1:#0E1117;--wall2:#1B1630;--wall3:#101E2B;
+  --orbA:#5B4BE0;--orbB:#C2448C;--orbC:#1E7FB0;--orbD:#B5742A;--orbO:.42;
+  --tabInk:rgba(255,255,255,.45);--onAccent:#101427;
+}
+.phone{position:relative;display:flex;flex-direction:column;width:268px;height:560px;border-radius:34px;overflow:hidden;isolation:isolate;
+  border:6px solid #0C0E16;background:linear-gradient(160deg,var(--wall1),var(--wall2) 55%,var(--wall3));
+  color:var(--ink);box-shadow:0 18px 40px rgba(0,0,0,.4);font-size:11px}
+.phone-bg{position:absolute;inset:0;z-index:0;overflow:hidden}
+.phone-bg i{position:absolute;border-radius:50%;filter:blur(38px);opacity:var(--orbO)}
+.phone-bg .o1{width:220px;height:220px;left:-70px;top:-60px;background:var(--orbA)}
+.phone-bg .o2{width:200px;height:200px;right:-70px;top:14%;background:var(--orbB)}
+.phone-bg .o3{width:190px;height:190px;left:25%;bottom:-90px;background:var(--orbC)}
+.statusbar{position:relative;z-index:2;height:24px;display:flex;align-items:center;justify-content:space-between;
+  padding:0 14px;font-size:9.5px;font-weight:700;color:var(--ink)}
+.sb-r{display:flex;align-items:center;gap:3px}
+.appbar{position:relative;z-index:2;display:flex;align-items:center;gap:8px;padding:8px 13px 9px}
+.ab-back{display:grid;place-items:center;width:22px;height:22px;color:var(--ink)}
+.ab-txt{flex:1;min-width:0}.ab-title{font-size:16px;font-weight:800;letter-spacing:.2px;line-height:1.2}
+.ab-sub{font-size:10px;color:var(--sub);margin-top:2px}
+.ab-right{display:flex;gap:8px;align-items:center}
+.ab-t{font-size:10.5px;color:var(--accent);font-weight:700;white-space:nowrap}
+.content{position:relative;z-index:2;flex:1 1 auto;min-height:0;overflow:hidden;padding:2px 12px 8px}
+.scroll{height:100%;overflow:auto;scrollbar-width:none}.scroll::-webkit-scrollbar{display:none}
+
+/* 玻璃卡 */
+.card{border-radius:15px;padding:10px 11px;margin-bottom:9px;background:var(--glass);
+  border:1px solid var(--glassEdge);box-shadow:var(--shadow);backdrop-filter:blur(18px) saturate(1.5)}
+.card.glass{backdrop-filter:blur(22px) saturate(1.7)}
+.row{display:flex;align-items:center;gap:7px}
+.grow{flex:1}
+.t{font-size:11px;line-height:1.45;color:var(--ink)}
+.t.b{font-weight:750}.t.s{font-size:10px;color:var(--sub)}
+.t.p{color:var(--accent)}.t.big{font-size:14px}.t.r{color:var(--bad)}.t.g{color:var(--good)}
+.btn{display:inline-flex;align-items:center;justify-content:center;padding:5px 10px;border-radius:9px;
+  font-size:10.5px;font-weight:700;white-space:nowrap}
+.btn.pri{background:var(--accent);color:var(--onAccent)}
+.btn.line{border:1px solid var(--hair);color:var(--ink);background:rgba(255,255,255,.18)}
+.btn.ghost{color:var(--accent);background:transparent}
+.btn.sm{padding:4px 9px;font-size:10px}
+.chip{display:inline-flex;padding:2px 7px;border-radius:7px;font-size:9.5px;font-weight:700;white-space:nowrap;
+  border:1px solid var(--hair);color:var(--sub);background:rgba(255,255,255,.20)}
+.chip.g{color:var(--good);border-color:transparent;background:rgba(14,159,110,.14)}
+.chip.w{color:var(--warn);border-color:transparent;background:rgba(180,83,9,.14)}
+.chip.r{color:var(--bad);border-color:transparent;background:rgba(220,38,38,.13)}
+.chip.line{color:var(--sub)}
+.bar{height:5px;border-radius:4px;background:var(--hair);overflow:hidden;margin:5px 0}
+.bar>i{display:block;height:100%;border-radius:4px;background:var(--accent)}
+.kv{display:flex;justify-content:space-between;font-size:10.5px;padding:5px 1px;border-bottom:1px solid var(--hair);color:var(--sub)}
+.kv .v{color:var(--ink);font-weight:700}
+.divider{height:1px;background:var(--hair);margin:8px 2px}
+.hero{padding:3px 2px 9px}.hero h2{margin:0;font-size:21px;font-weight:800;letter-spacing:.2px}
+.hero p{margin:3px 0 0;font-size:10.5px;color:var(--sub)}
+.ic{display:inline-grid;place-items:center;color:var(--ink)}
+.spin{display:inline-block;width:10px;height:10px;border-radius:50%;border:2px solid var(--hair);
+  border-top-color:var(--accent);animation:sp .8s linear infinite}
+.spin.w{border-color:rgba(255,255,255,.3);border-top-color:#fff}
+@keyframes sp{to{transform:rotate(360deg)}}
+
+/* 弹层 / 弹窗 / Toast / 菜单 */
+.dim{position:absolute;inset:0;z-index:9;background:rgba(10,12,22,.42);backdrop-filter:blur(3px);
+  display:grid;place-items:center;padding:18px}
+.dlg{width:100%;border-radius:18px;padding:15px 14px;background:var(--glass);
+  border:1px solid var(--glassEdge);box-shadow:0 20px 50px rgba(0,0,0,.35);backdrop-filter:blur(26px) saturate(1.6)}
+.dlg h4{margin:0 0 7px;font-size:13.5px;font-weight:800}
+.dlg p{margin:0 0 10px;font-size:10.5px;line-height:1.6;color:var(--sub)}
+.dlg-btns{display:flex;gap:8px;justify-content:flex-end;margin-top:10px}
+.dlg-btns .btn{flex:1}
+.menu{position:absolute;z-index:8;min-width:130px;border-radius:12px;padding:5px;background:var(--glass);
+  border:1px solid var(--glassEdge);box-shadow:0 14px 34px rgba(0,0,0,.28);backdrop-filter:blur(20px)}
+.menu>div{padding:7px 10px;font-size:10.5px;border-radius:8px;color:var(--ink)}
+.menu>div+div{border-top:1px solid var(--hair)}
+.toast{position:absolute;z-index:10;left:50%;bottom:96px;transform:translateX(-50%);
+  max-width:82%;padding:8px 12px;border-radius:11px;font-size:10px;text-align:center;
+  background:rgba(20,24,38,.86);color:#fff;box-shadow:0 10px 26px rgba(0,0,0,.3)}
+.ball{position:absolute;z-index:8;width:52px;height:52px;border-radius:50%;display:grid;place-items:center;
+  background:conic-gradient(var(--accent) var(--v),var(--hair) 0);box-shadow:0 8px 20px rgba(0,0,0,.3)}
+.ball:before{content:"";position:absolute;inset:5px;border-radius:50%;background:var(--glass);backdrop-filter:blur(10px)}
+.ball b{position:relative;font-size:13px;font-weight:800}.ball span{display:none}
+.notif{position:absolute;z-index:8;left:12px;right:12px;top:34px;border-radius:13px;padding:9px 11px;
+  background:var(--glass);border:1px solid var(--glassEdge);box-shadow:0 12px 30px rgba(0,0,0,.28);backdrop-filter:blur(20px)}
+.nh{display:flex;justify-content:space-between;font-size:9px;color:var(--sub);font-weight:700}
+.nb b{font-size:11px}.nb p{margin:3px 0 0;font-size:10px;color:var(--sub)}
+.na{display:inline-block;margin-top:6px;font-size:10px;font-weight:700;color:var(--accent)}
+
+/* 底部 tab / 迷你条 */
+.minibar{position:relative;z-index:3;flex:0 0 auto;margin:0 9px 6px;height:40px;border-radius:12px;
+  display:flex;align-items:center;gap:8px;padding:0 9px;background:var(--glass);
+  border:1px solid var(--glassEdge);box-shadow:var(--shadow);backdrop-filter:blur(18px)}
+.mb-cover{width:26px;height:26px;border-radius:7px;display:grid;place-items:center;font-size:13px;
+  background:var(--accentSoft);color:var(--accent);flex:0 0 auto}
+.mb-txt{flex:1;min-width:0;display:flex;flex-direction:column;line-height:1.25}
+.mb-txt b{font-size:10.5px;font-weight:750;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mb-txt span{font-size:9px;color:var(--sub)}
+.mb-go{color:var(--accent);display:grid;place-items:center}
+.tabbar{position:relative;z-index:3;flex:0 0 45px;display:flex;
+  background:var(--glass);border-top:1px solid var(--glassEdge);backdrop-filter:blur(22px) saturate(1.6)}
+.tab{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
+  font-size:8.5px;font-weight:650;color:var(--tabInk)}
+.tab.on{color:var(--accent)}.tab.on span{font-weight:800}
+
+/* 组件：滑块 / 环 / 列表行 / 网格 / 控件 */
+.slider{margin:7px 0}.sl-h{display:flex;justify-content:space-between;font-size:10px;margin-bottom:5px}
+.sl-h b{color:var(--accent)}
+.sl-t{position:relative;height:4px;border-radius:3px;background:var(--hair)}
+.sl-t>i{display:block;height:100%;border-radius:3px;background:var(--accent)}
+.sl-t>em{position:absolute;top:50%;width:12px;height:12px;border-radius:50%;transform:translate(-50%,-50%);
+  background:#fff;border:1px solid var(--hair);box-shadow:0 2px 5px rgba(0,0,0,.2)}
+.ring{width:78px;height:78px;border-radius:50%;margin:8px auto;display:grid;place-items:center;
+  background:conic-gradient(var(--accent) var(--v),var(--hair) 0)}
+.ring>div{width:62px;height:62px;border-radius:50%;display:grid;place-items:center;align-content:center;
+  background:var(--glass);backdrop-filter:blur(10px)}
+.ring b{font-size:20px;font-weight:800;line-height:1}.ring span{font-size:9px;color:var(--sub)}
+.tk-ic{width:28px;height:28px;border-radius:8px;display:grid;place-items:center;flex:0 0 auto;
+  background:var(--accentSoft);color:var(--accent)}
+.tk-txt{flex:1;min-width:0;display:flex;flex-direction:column;line-height:1.35}
+.tk-txt b{font-size:10.8px;font-weight:750;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tk-txt span{font-size:9.5px;color:var(--sub)}
+.seggrid{display:grid;grid-template-columns:repeat(8,1fr);gap:3px;margin:6px 0}
+.seggrid i{aspect-ratio:1;border-radius:4px;display:grid;place-items:center;font-style:normal;font-size:8px;font-weight:700;color:var(--sub)}
+.sd{background:rgba(14,159,110,.28);color:var(--good)!important}
+.sr{background:var(--accent);color:#fff!important}
+.sx{background:rgba(220,38,38,.22);color:var(--bad)!important}
+.sw{background:var(--hair)}
+.legend{display:flex;flex-wrap:wrap;gap:8px;font-size:9px;color:var(--sub);margin:6px 0}
+.legend i{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:3px;vertical-align:-1px}
+.voice-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin:6px 0}
+.voice-grid>div{padding:7px 3px;text-align:center;border-radius:9px;font-size:9.5px;font-weight:700;
+  border:1px solid var(--hair);background:rgba(255,255,255,.16);color:var(--sub)}
+.voice-grid>div.on{background:var(--accent);border-color:var(--accent);color:var(--onAccent)}
+.modes{display:flex;gap:5px;margin:6px 0}.modes>div{flex:1;text-align:center;padding:5px 2px;border-radius:8px;
+  font-size:9.5px;border:1px solid var(--hair);color:var(--sub)}
+.modes>div.on{background:var(--accentSoft);color:var(--accent);font-weight:800}
+.field{border:1px solid var(--hair);border-radius:11px;padding:9px 10px;font-size:10.5px;color:var(--ink);
+  background:rgba(255,255,255,.22);min-height:36px}
+.field.area{min-height:76px}.field .ph{color:var(--sub)}
+.switch{width:28px;height:16px;border-radius:10px;background:var(--hair);position:relative;flex:0 0 auto}
+.switch:after{content:"";position:absolute;top:2px;left:2px;width:12px;height:12px;border-radius:50%;background:#fff;transition:.18s}
+.switch.on{background:var(--accent)}.switch.on:after{left:14px}
+.empty{text-align:center;padding:34px 10px;color:var(--sub);font-size:10.5px;line-height:1.7}
+.empty .ec{font-size:30px;opacity:.35;margin-bottom:8px}
+.empty .btn{margin:8px 4px 0}
+.skel{display:flex;gap:8px;padding:9px 0;border-bottom:1px solid var(--hair)}
+.sbox{width:34px;height:34px;border-radius:8px;background:var(--hair);flex:0 0 auto}
+.sl{flex:1;display:flex;flex-direction:column;gap:5px;padding-top:3px}
+.sl i{height:7px;border-radius:4px;background:var(--hair);display:block}.sl i:last-child{width:55%}
+.cover{width:120px;height:120px;border-radius:22px;margin:10px auto;display:grid;place-items:center;
+  font-size:44px;color:var(--accent);background:var(--glass);border:1px solid var(--glassEdge);
+  box-shadow:var(--shadow);backdrop-filter:blur(18px)}
+.cover.sm{width:44px;height:44px;border-radius:12px;font-size:18px;margin:0}
+.playctl{display:flex;align-items:center;justify-content:center;gap:24px;margin:12px 0;color:var(--ink)}
+.playctl .pmain{width:48px;height:48px;border-radius:50%;display:grid;place-items:center;
+  background:var(--accent);color:var(--onAccent);box-shadow:0 8px 20px rgba(79,70,229,.35)}
+
+/* ===== 文档视图 ===== */
+.doc{background:rgba(255,255,255,.05);border:1px solid var(--hair2);border-radius:16px;padding:22px 26px;
+  backdrop-filter:blur(14px);line-height:1.8;font-size:13px;color:#D8DDF0;max-width:1000px}
+.doc h1{font-size:20px;margin:0 0 8px;color:#fff}.doc h2{font-size:16px;margin:22px 0 8px;color:#EEF0FF}
+.doc h3{font-size:14px;margin:16px 0 6px;color:#C7CEE8}
+.doc code{background:rgba(255,255,255,.09);padding:1px 5px;border-radius:5px;font-size:12px;color:#A5B4FC}
+.doc table{width:100%;border-collapse:collapse;margin:10px 0;font-size:12.5px}
+.doc th,.doc td{border:1px solid rgba(255,255,255,.12);padding:7px 9px;text-align:left;vertical-align:top}
+.doc th{background:rgba(165,180,252,.10);color:#EEF0FF}
+.doc li{margin:3px 0}
+.view{display:none}.view.on{display:block}
+
+/* ===== lightbox ===== */
+#lb{position:fixed;inset:0;z-index:50;background:rgba(6,8,15,.88);backdrop-filter:blur(8px);
+  display:none;place-items:center;padding:20px;overflow:auto}
+#lb.on{display:grid}
+#lb .lb-in{transform:scale(1.55);transform-origin:center center;margin:120px 0}
+#lb .lb-cap{position:fixed;top:16px;left:0;right:0;text-align:center;color:#EEF0FF;font-size:13px}
+#lb .lb-x{position:fixed;top:14px;right:20px;color:#fff;font-size:22px;cursor:pointer}
+</style>
+</head>
+<body>
+<div class="page-bg"><i class="o o1"></i><i class="o o2"></i><i class="o o3"></i></div>
+<div class="wrap">
+  <div class="topbar">
+    <div class="brand"><b>声页 · 重做后界面规格</b><span>纯代码绘制 · 不是生图 · 逐张可对照契约验收</span></div>
+    <div class="tools">
+      <button class="tool on" data-v="figures" onclick="switchView('figures')">界面规格</button>
+      <button class="tool" data-v="contract" onclick="switchView('contract')">契约 / 词表</button>
+      <button class="tool" data-v="check" onclick="switchView('check')">验收清单</button>
+      <button class="tool" id="themeBtn" onclick="toggleTheme()">浅色</button>
+      <button class="tool" id="modeBtn" onclick="toggleMode()">平铺</button>
+      <input class="qbox" id="q" placeholder="搜名称 / 状态 / 文案" oninput="onQ(this.value)">
+    </div>
+  </div>
+
+  <section class="view on" id="v-figures">
+    <div class="legendbar" id="gtags"></div>
+    <p class="note" id="figNote"></p>
+    <div class="grid" id="grid"></div>
+  </section>
+  <section class="view" id="v-contract"><div class="doc" id="contractDoc"></div></section>
+  <section class="view" id="v-check"><div class="doc" id="checkDoc"></div></section>
+</div>
+<div id="lb"><span class="lb-x" onclick="closeLb()">×</span><div class="lb-cap" id="lbCap"></div><div class="lb-in" id="lbIn"></div></div>
+
+<script>
+/* ==========================================================================
+   声页重做 · 新版界面规格 · 公共绘制库 U（纯 HTML/CSS/SVG，不使用任何图片）
+   --------------------------------------------------------------------------
+   本文件是「总工程师」定义的唯一共同语言。所有子智能体只允许调用这里
+   暴露的 API，禁止自行发明组件、禁止内联色值、禁止引入外部资源。
+   API 清单与用法见 SPEC_CONTRACT.md。
+   ========================================================================== */
+
+/* ---------- 组定义 / 图册容器 ---------- */
+const GROUPS = [
+  {id:'A', name:'我的书',       desc:'首页 · 资产总览'},
+  {id:'B', name:'这一本',       desc:'目录页 · 只管内容与章节'},
+  {id:'C', name:'正在做',       desc:'任务页 · 全 App 唯一状态中心'},
+  {id:'D', name:'续跑与开做',   desc:'启动弹窗 / 开做之前确认卡'},
+  {id:'E', name:'正在听',       desc:'播放器与队列'},
+  {id:'F', name:'调音台',       desc:'保留结构，玻璃化'},
+  {id:'G', name:'设置与模型',   desc:'重分层 / 小修'},
+  {id:'H', name:'系统态',       desc:'通知 / 悬浮球 / 权限'},
+];
+const SHOTS = [];
+const S = (o) => SHOTS.push(o);
+
+/* ---------- 图标（自绘 path，24×24 stroke） ---------- */
+const U = {
+  svg(paths, size){return `<svg viewBox="0 0 24 24" width="${size||16}" height="${size||16}" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">${paths}</svg>`},
+  I:{
+    back:'<path d="M15 18l-6-6 6-6"/>',
+    menu:'<path d="M4 6h16M4 12h16M4 18h16"/>',
+    plus:'<path d="M12 5v14M5 12h14"/>',
+    more:'<circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/>',
+    book:'<path d="M4 5.5A2.5 2.5 0 016.5 3H20v16H6.5A2.5 2.5 0 004 21.5z"/><path d="M4 18.5A2.5 2.5 0 016.5 16H20"/>',
+    tasks:'<path d="M9 6h11M9 12h11M9 18h11"/><path d="M4 6l1 1 2-2M4 12l1 1 2-2M4 18l1 1 2-2"/>',
+    play:'<path d="M8 5l11 7-11 7z"/>',
+    pause:'<path d="M9 5v14M15 5v14"/>',
+    next:'<path d="M6 5l10 7-10 7z"/><path d="M18 5v14"/>',
+    prev:'<path d="M18 5L8 12l10 7z"/><path d="M6 5v14"/>',
+    mixer:'<path d="M4 7h10M18 7h2M4 12h2M10 12h10M4 17h8M16 17h4"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="12" r="2"/><circle cx="14" cy="17" r="2"/>',
+    gear:'<circle cx="12" cy="12" r="3"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',
+    moon:'<path d="M20 14A8 8 0 019.9 4 8 8 0 1020 14z"/>',
+    sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',
+    check:'<path d="M5 12l5 5L20 7"/>',
+    trash:'<path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/>',
+    chev:'<path d="M9 6l6 6-6 6"/>',
+    search:'<circle cx="11" cy="11" r="6"/><path d="M16 16l4 4"/>',
+    head:'<path d="M4 14v-2a8 8 0 0116 0v2"/><path d="M4 14h3v6H5a1 1 0 01-1-1zM20 14h-3v6h2a1 1 0 001-1z"/>',
+    clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+    list:'<path d="M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01"/>',
+    volume:'<path d="M5 9v6h4l5 4V5L9 9z"/><path d="M17 9a4 4 0 010 6"/>',
+    warn:'<path d="M12 3l9 16H3z"/><path d="M12 9v5M12 17h.01"/>',
+    download:'<path d="M12 3v12M7 11l5 5 5-5M4 20h16"/>',
+    refresh:'<path d="M20 11a8 8 0 10-2 6M20 5v6h-6"/>',
+    x:'<path d="M6 6l12 12M18 6L6 18"/>',
+    pin:'<path d="M9 3h6l-1 6 3 3v2H7v-2l3-3z"/><path d="M12 14v7"/>',
+  },
+  ic(n,cls){return `<span class="ic ${cls||''}">${U.svg(U.I[n]||U.I.menu)}</span>`},
+
+  /* ---------- 骨架 ---------- */
+  sb(){return `<div class="statusbar"><span>9:41</span><span class="sb-r">${U.svg('<path d="M2 8h3v8H2zM7 6h3v10H7zM12 4h3v12h-3zM17 2h3v14h-3z"/>',11)} ${U.svg('<path d="M12 18a2 2 0 100 4 2 2 0 000-4zM12 4c4 0 7 3 7 7M12 8c2 0 4 2 4 4"/>',11)} ${U.svg('<rect x="2" y="7" width="17" height="10" rx="2"/><path d="M21 10v4"/>',13)}</span></div>`},
+
+  /* 顶栏：大标题 + 可选副标题 + 右侧文字按钮（新版禁止纯图标无文字） */
+  bar(o){o=o||{};const tr=(o.trailing||[]).map(t=>`<span class="ab-t">${t}</span>`).join('');
+    return `<div class="appbar">
+      ${o.back?`<span class="ab-back">${U.svg(U.I.back,20)}</span>`:''}
+      <div class="ab-txt"><div class="ab-title">${o.title||''}</div>${o.sub?`<div class="ab-sub">${o.sub}</div>`:''}</div>
+      <div class="ab-right">${tr}</div></div>`;
+
+  },
+  /* 底部四空间 tab（新版核心导航） */
+  tabs(on){const L=[['book','我的书'],['list','这一本'],['tasks','正在做'],['head','正在听']];
+    return `<div class="tabbar">${L.map((x,i)=>`<div class="tab ${i===on?'on':''}">${U.svg(U.I[x[0]],20)}<span>${x[1]}</span></div>`).join('')}</div>`;
+  },
+  /* 迷你播放条（在 tab 之上） */
+  mini(o){o=o||{};return `<div class="minibar"><span class="mb-cover">♪</span>
+    <div class="mb-txt"><b>${o.title||'未在播放'}</b><span>${o.sub||'—'}</span></div>
+    <span class="mb-go">${U.svg(U.I[o.playing?'pause':'play'],18)}</span></div>`;
+  },
+  /* 手机：内容区负责滚动；mini/tabs 常驻 */
+  phone(o){o=o||{};return `<div class="phone">
+      <div class="phone-bg"><i class="o1"></i><i class="o2"></i><i class="o3"></i></div>
+      ${U.sb()}
+      ${o.appbar||''}
+      <div class="content">${o.body||''}</div>
+      ${o.mini&&o.mini!==false?o.mini:''}
+      ${o.tabs===false?'':U.tabs(o.tab==null?0:o.tab)}
+    </div>`;
+  },
+
+  /* ---------- 基础原子 ---------- */
+  C(inner,cls){return `<div class="card ${cls||''}">${inner}</div>`},
+  glass(inner,cls){return `<div class="card glass ${cls||''}">${inner}</div>`},
+  R(inner,cls){return `<div class="row ${cls||''}">${inner}</div>`},
+  T(t,cls){return `<span class="t ${cls||''}">${t}</span>`},
+  B(t,cls){return `<span class="btn ${cls||''}">${t}</span>`},
+  chip(t,cls){return `<span class="chip ${cls||''}">${t}</span>`},
+  bar2(pct,cls){return `<div class="bar ${cls||''}"><i style="width:${pct}%"></i></div>`},
+  kv(k,v){return `<div class="kv"><span>${k}</span><span class="v">${v}</span></div>`},
+  divider(){return '<div class="divider"></div>'},
+  spin(w){return `<span class="spin ${w?'w':''}"></span>`},
+  dim(inner){return `<div class="dim">${inner}</div>`},
+  dlg(o){return U.dim(`<div class="dlg"><h4>${o.title||''}</h4>
+    ${o.text?`<p>${o.text}</p>`:''}
+    ${o.body||''}
+    <div class="dlg-btns">${(o.buttons||[]).map((b,i)=>`<span class="btn ${i===0?'pri':'ghost'}">${b}</span>`).join('')}</div></div>`);
+  },
+  menu(o){return `<div class="menu" style="${o.style||'top:150px;left:80px'}">${(o.items||[]).map(i=>`<div>${i}</div>`).join('')}</div>`;
+  },
+  toast(t){return `<div class="toast">${t}</div>`},
+  ball(o){return `<div class="ball" style="right:12px;top:${o.top||300}px;--v:${(o.v||0)*3.6}deg"><b>${o.v||0}</b>${o.sub?`<span>${o.sub}</span>`:''}</div>`;
+  },
+  notif(o){return `<div class="notif"><div class="nh"><span>声页</span><span>${o.time||'现在'}</span></div>
+    <div class="nb"><b>${o.title||''}</b><p>${o.text||''}</p>${o.action?`<span class="na">${o.action}</span>`:''}</div></div>`;
+  },
+  field(t,ph,area){return `<div class="field ${area?'area':''}"><span class="${t?'':'ph'}">${t||ph}</span></div>`;
+  },
+  sw(on){return `<span class="switch ${on?'on':''}"></span>`},
+  empty(t,btns){return `<div class="empty"><div class="ec">♪</div><div>${t}</div>
+    ${(btns||[]).map(b=>`<span class="btn ghost sm">${b}</span>`).join('')}</div>`;
+  },
+  skel(n){let s='';for(let i=0;i<(n||3);i++)s+=`<div class="skel"><span class="sbox"></span><div class="sl"><i></i><i></i></div></div>`;return s;
+  },
+  slider(label,val,unit){return `<div class="slider"><div class="sl-h"><span>${label}</span><b>${val}${unit||''}</b></div><div class="sl-t"><i style="width:${val}%"></i><em style="left:${val}%"></em></div></div>`;
+  },
+  /* 状态环：K 组样板 —— 只留数字，不写字 */
+  ring(v,sub){return `<div class="ring" style="--v:${(v||0)*3.6}deg"><div><b>${v||0}</b><span>${sub||'%'}</span></div></div>`;
+  },
+  /* 大标题区（我的书 / 正在做 用） */
+  hero(title,sub){return `<div class="hero"><h2>${title}</h2>${sub?`<p>${sub}</p>`:''}</div>`;
+  },
+  /* 状态卡：新版唯一进度口径，一根条一个百分比 */
+  stat(o){return U.glass(`<div class="row"><span class="t b">${o.title}</span><span class="grow"></span><span class="t p b">${o.pct}%</span></div>
+    ${o.line?`<div class="t s" style="margin:4px 0 8px">${o.line}</div>`:'<div style="height:8px"></div>'}
+    ${U.bar2(o.pct)}
+    ${o.actions?`<div class="row" style="margin-top:10px">${o.actions.map((a,i)=>`<span class="btn ${i?'ghost':'line'} sm">${a}</span>`).join('')}<span class="grow"></span></div>`:''}`);
+  },
+  /* 书 / 章 / 曲目行 */
+  track(o){return U.glass(`<div class="row"><span class="tk-ic">${U.svg(U.I[o.icon||'book'],18)}</span>
+    <div class="tk-txt"><b>${o.title}</b><span>${o.sub||''}</span></div>
+    <span class="grow"></span>${o.right||''}</div>`, o.cls||'');
+  },
+  /* 章节状态胶囊（统一词表，只允许 SPEC_CONTRACT.md 里的词） */
+  stateChip(kind){const M={done:['可听','g'],running:['制作中','w'],queued:['排队中','line'],idle:['未开始','line'],failed:['失败','r'],paused:['已暂停','line']};
+    const x=M[kind]||M.idle;return `<span class="chip ${x[1]}">${x[0]}</span>`;
+  },
+  /* 小块网格（制作进度细览，收进任务页而非目录页） */
+  segGrid(spec){const CL={done:'sd',run:'sr',redo:'sx',wait:'sw'};
+    return `<div class="seggrid">${(spec||[]).map((s,i)=>`<i class="${CL[s.c]||'sw'}">${s.t||(i+1)}</i>`).join('')}</div>`;
+  },
+  legend(){return `<div class="legend"><span><i class="sd"></i>已生成</span><span><i class="sr"></i>合成中</span><span><i class="sx"></i>需重做</span><span><i class="sw"></i>待生成</span></div>`;
+  },
+  voices(names,on){return `<div class="voice-grid">${(names||[]).map((n,i)=>`<div class="${i===on?'on':''}">${n}</div>`).join('')}</div>`;
+  },
+  modes(labels,on){return `<div class="modes">${(labels||[]).map((l,i)=>`<div class="${i===on?'on':''}">${l}</div>`).join('')}</div>`;
+  },
+  cover(o){return `<div class="cover ${o&&o.small?'sm':''}">${(o&&o.txt)||'♪'}</div>`;
+  },
+  playctl(o){return `<div class="playctl"><span>${U.svg(U.I.prev,22)}</span>
+    <span class="pmain">${U.svg(U.I[o&&o.playing?'pause':'play'],26)}</span>
+    <span>${U.svg(U.I.next,22)}</span></div>`;
+  },
+};
+
+/* 快捷包装：默认带 mini 与 tab；子智能体统一用 P() 画一屏 */
+const P = (o) => U.phone(o);
+
+/* 总工程师样板：2 张，作为子智能体产物的对照基准 + 构建链路冒烟测试。
+   它们不是批量画图，是「契约长这样」的可执行示例。 */
+S({id:'A9',g:'A',name:'我的书 · 规格基准（总工程师样板）',
+  state:'3 本 · 1 本制作中', trigger:'冷启动',
+  spec:'CONSTITUTION 内容与导入 / ARCHITECTURE feature:library / STATE_VOCAB §2',
+  render:()=>P({tab:0, mini:false, appbar:U.bar({title:'我的书',trailing:['＋ 导入']}),
+    body:`<div class="scroll">
+      ${U.T('3 本','s')}
+      ${U.track({title:'山那边',sub:'12 章 · 已能听 3 章',icon:'book',right:U.stateChip('running')})}
+      ${U.track({title:'夜航',sub:'12 章 · 可听',icon:'book',right:U.stateChip('done')})}
+      ${U.track({title:'旧巷钟声',sub:'8 章 · 未开始',icon:'book',right:U.stateChip('idle')})}
+      ${U.glass(`<div class="row">${U.T('念一段','b')}<span class="grow"></span>${U.B('合成这段','ghost sm')}</div>`)}
+    </div>`})});
+
+S({id:'C11',g:'C',name:'正在做 · 规格基准（唯一状态中心）',
+  state:'制作中 42%', trigger:'有任务在跑',
+  spec:'CONSTITUTION 制作链路 / ARCHITECTURE feature:tasks / STATE_VOCAB §0 §1',
+  render:()=>P({tab:2, mini:false, appbar:U.bar({title:'正在做',trailing:['调音台']}),
+    body:`<div class="scroll">
+      ${U.T('1 个进行中 · 2 个排队','s')}
+      ${U.stat({title:'正在做《山那边》',pct:42,line:'第 2 章 · 还剩约 6 分钟',actions:['暂停','看进度 ›']})}
+      ${U.T('排队中 2','s')}
+      ${U.track({title:'整本《夜航》',sub:'12 章',icon:'tasks',right:U.chip('排队中','line')})}
+      ${U.track({title:'选中 3 章 ·《旧巷钟声》',sub:'3 章',icon:'tasks',right:U.chip('排队中','line')})}
+      ${U.glass(`<div class="row">${U.T('我的音频 · 3 个成品','b')}<span class="grow"></span>${U.B('查看 ›','ghost sm')}</div>`)}
+    </div>`})});
+
+S({
+  id:'A1', g:'A', name:'首页 · 空态',
+  state:'未开始', trigger:'首次安装',
+  spec:'CONSTITUTION 内容与导入 / ARCHITECTURE feature:library',
+  render: ()=>P({
+    appbar: U.bar({title:'我的书'}),
+    mini:false, tab:0,
+    body: `<div class="scroll">`+
+      U.glass(U.T('粘贴一段','b')+U.field('','粘贴或输入要听的内容',true)+U.R('<span class="grow"></span>'+U.B('合成这段','pri sm')))+
+      U.empty('还没有书 · 支持 txt / md / epub',['导入'])+
+      `</div>`
+  })
+});
+
+S({
+  id:'A2', g:'A', name:'首页 · 三本书',
+  state:'可听', trigger:'已有藏书',
+  spec:'CONSTITUTION 内容与导入 / ARCHITECTURE feature:library',
+  render: ()=>P({
+    appbar: U.bar({title:'我的书'}),
+    mini:false, tab:0,
+    body: `<div class="scroll">`+
+      U.glass(U.T('粘贴一段','b')+U.field('','粘贴或输入要听的内容',true)+U.R('<span class="grow"></span>'+U.B('合成这段','pri sm')))+
+      U.T('我的书 · 3 本','s')+
+      U.track({title:'百年孤独', sub:'32章', icon:'book', right:U.stateChip('done')})+
+      U.track({title:'小王子', sub:'12章', icon:'book', right:U.stateChip('running')})+
+      U.track({title:'人类简史', sub:'48章', icon:'book', right:U.stateChip('idle')})+
+      `</div>`
+  })
+});
+
+S({
+  id:'A3', g:'A', name:'首页 · 制作中',
+  state:'制作中', trigger:'开做之后',
+  spec:'CONSTITUTION 内容与导入 / ARCHITECTURE feature:library',
+  render: ()=>P({
+    appbar: U.bar({title:'我的书'}),
+    mini:false, tab:0,
+    body: `<div class="scroll">`+
+      U.C(U.kv('可听','2')+U.kv('制作中','1'))+
+      U.T('制作中','s')+
+      U.track({title:'小王子', sub:'12章', right:U.stateChip('running')})+
+      U.T('可听','s')+
+      U.track({title:'百年孤独', sub:'32章', right:U.stateChip('done')})+
+      U.track({title:'人类简史', sub:'48章', right:U.stateChip('done')})+
+      `</div>`
+  })
+});
+
+S({
+  id:'A4', g:'A', name:'首页 · 全部可听',
+  state:'可听', trigger:'全部完成',
+  spec:'CONSTITUTION 内容与导入 / ARCHITECTURE feature:library',
+  render: ()=>P({
+    appbar: U.bar({title:'我的书'}),
+    mini:false, tab:0,
+    body: `<div class="scroll">`+
+      U.T('可听','s')+
+      U.track({title:'百年孤独', sub:'32章', right:U.stateChip('done')})+
+      U.track({title:'小王子', sub:'12章', right:U.stateChip('done')})+
+      U.track({title:'人类简史', sub:'48章', right:U.stateChip('done')})+
+      `</div>`
+  })
+});
+
+S({
+  id:'A5', g:'A', name:'首页 · 导入',
+  state:'失败', trigger:'导入这本书',
+  spec:'CONSTITUTION 内容与导入 / ARCHITECTURE feature:library',
+  render: ()=>P({
+    appbar: U.bar({title:'我的书'}),
+    mini:false, tab:0,
+    body: `<div class="scroll">`+
+      U.T('导入','s')+
+      U.track({title:'三体', right:U.spin()+U.chip('导入中','w')})+
+      U.track({title:'活着', right:U.stateChip('failed')+U.B('重试','sm')})+
+      `</div>`
+  })
+});
+
+S({
+  id:'A6', g:'A', name:'念一段 · 展开',
+  state:'待生成', trigger:'展开念一段',
+  spec:'CONSTITUTION 内容与导入 / ARCHITECTURE feature:library',
+  render: ()=>P({
+    appbar: U.bar({title:'我的书'}),
+    mini:false, tab:0,
+    body: `<div class="scroll">`+
+      U.T('念一段','s')+
+      U.C(
+        U.field('','输入文字',true)+
+        U.divider()+
+        U.kv('状态','待生成')
+      )+
+      U.R(U.B('合成这段','pri'))+
+      `</div>`
+  })
+});
+
+S({
+  id:'A7', g:'A', name:'片段 · 三态',
+  state:'合成中', trigger:'片段合成',
+  spec:'CONSTITUTION 内容与导入 / ARCHITECTURE feature:library',
+  render: ()=>P({
+    appbar: U.bar({title:'我的书'}),
+    mini:false, tab:0,
+    body: `<div class="scroll">`+
+      U.T('片段 · 3','s')+
+      U.track({title:'片段1', right:U.spin()+U.chip('合成中','w')})+
+      U.track({title:'片段2', right:U.chip('已生成','g')})+
+      U.track({title:'片段3', right:U.chip('需重做','r')+U.B('重做','sm')})+
+      `</div>`
+  })
+});
+
+S({
+  id:'A8', g:'A', name:'长按 · 删除确认',
+  state:'可听', trigger:'长按一本书',
+  spec:'CONSTITUTION 内容与导入 / ARCHITECTURE feature:library',
+  render: ()=>P({
+    appbar: U.bar({title:'我的书'}),
+    mini:false, tab:0,
+    body: `<div class="scroll">`+
+      U.track({title:'活着', sub:'20章', right:U.stateChip('done')})+
+      U.track({title:'三体', sub:'30章', right:U.stateChip('done')})+
+      `</div>`+
+      U.menu({items:['置顶','重命名','删除'], style:'top:170px;left:120px'})+
+      U.dlg({title:'删除《活着》', text:'不可撤销', buttons:['删除','取消']})
+  })
+});
+
+S({
+  id:'B1', g:'B', name:'这一本 · 正常态', state:'可听', trigger:'打开这一本',
+  spec:'ARCHITECTURE feature:book',
+  render: ()=>P({
+    appbar: U.bar({back:true, title:'小王子', sub:'共 6 章', trailing:['更多']}),
+    body: '<div class="scroll">' +
+      U.stat({title:'可听', pct:66, line:'4 / 6', actions:['接着听','制作这一本']}) +
+      U.divider() +
+      [['第一章 · 初到沙漠','8:12','done','收听','play'],
+       ['第二章 · 沙漠里的狐狸','12:34','done','收听','play'],
+       ['第三章 · 玫瑰','9:05','done','收听','play'],
+       ['第四章 · 星球','10:41','done','收听','play'],
+       ['第五章 · 落日','7:28','running','阅读','book'],
+       ['第六章 · 归途','6:50','idle','阅读','book']]
+        .map(c=>U.track({title:c[0], sub:c[1], icon:c[4], right:U.stateChip(c[2])+U.B(c[3],'ghost sm')})).join('') +
+      '</div>',
+    tab:1, mini:false
+  })
+});
+
+S({
+  id:'B2', g:'B', name:'这一本 · 制作中', state:'制作中', trigger:'有章在制作',
+  spec:'ARCHITECTURE feature:book',
+  render: ()=>P({
+    appbar: U.bar({back:true, title:'小王子', sub:'共 6 章', trailing:['更多']}),
+    body: '<div class="scroll">' +
+      U.stat({title:'制作中', pct:50, line:'3 / 6', actions:['接着听','制作这一本']}) +
+      U.divider() +
+      [['第一章 · 初到沙漠','8:12','done','收听','play'],
+       ['第二章 · 沙漠里的狐狸','12:34','done','收听','play'],
+       ['第三章 · 玫瑰','9:05','done','收听','play'],
+       ['第四章 · 星球','10:41','running','阅读','book'],
+       ['第五章 · 落日','7:28','idle','阅读','book'],
+       ['第六章 · 归途','6:50','idle','阅读','book']]
+        .map(c=>U.track({title:c[0], sub:c[1], icon:c[4], right:U.stateChip(c[2])+U.B(c[3],'ghost sm')})).join('') +
+      '</div>',
+    tab:1, mini:false
+  })
+});
+
+S({
+  id:'B3', g:'B', name:'这一本 · 全部可听', state:'可听', trigger:'全部章可听',
+  spec:'ARCHITECTURE feature:book',
+  render: ()=>P({
+    appbar: U.bar({back:true, title:'小王子', sub:'共 6 章', trailing:['更多']}),
+    body: '<div class="scroll">' +
+      U.stat({title:'可听', pct:100, line:'6 / 6', actions:['接着听','重新分章']}) +
+      U.divider() +
+      [['第一章 · 初到沙漠','8:12','done','收听','play'],
+       ['第二章 · 沙漠里的狐狸','12:34','done','收听','play'],
+       ['第三章 · 玫瑰','9:05','done','收听','play'],
+       ['第四章 · 星球','10:41','done','收听','play'],
+       ['第五章 · 落日','7:28','done','收听','play'],
+       ['第六章 · 归途','6:50','done','收听','play']]
+        .map(c=>U.track({title:c[0], sub:c[1], icon:c[4], right:U.stateChip(c[2])+U.B(c[3],'ghost sm')})).join('') +
+      '</div>',
+    tab:1, mini:false
+  })
+});
+
+S({
+  id:'B4', g:'B', name:'这一本 · 全部未开始', state:'未开始', trigger:'新导入未开做',
+  spec:'ARCHITECTURE feature:book',
+  render: ()=>P({
+    appbar: U.bar({back:true, title:'小王子', sub:'共 6 章', trailing:['更多']}),
+    body: '<div class="scroll">' +
+      U.stat({title:'未开始', pct:0, line:'0 / 6', actions:['制作这一本','导入']}) +
+      U.divider() +
+      [['第一章 · 初到沙漠','8:12','idle','阅读','book'],
+       ['第二章 · 沙漠里的狐狸','12:34','idle','阅读','book'],
+       ['第三章 · 玫瑰','9:05','idle','阅读','book'],
+       ['第四章 · 星球','10:41','idle','阅读','book'],
+       ['第五章 · 落日','7:28','idle','阅读','book'],
+       ['第六章 · 归途','6:50','idle','阅读','book']]
+        .map(c=>U.track({title:c[0], sub:c[1], icon:c[4], right:U.stateChip(c[2])+U.B(c[3],'ghost sm')})).join('') +
+      '</div>',
+    tab:1, mini:false
+  })
+});
+
+S({
+  id:'B5', g:'B', name:'这一本 · 接着听', state:'可听', trigger:'有收听位置',
+  spec:'ARCHITECTURE feature:book',
+  render: ()=>P({
+    appbar: U.bar({back:true, title:'小王子', sub:'共 6 章', trailing:['更多']}),
+    body: '<div class="scroll">' +
+      U.stat({title:'可听', pct:66, line:'4 / 6 · 上次听到第二章 12:34', actions:['接着听','制作这一本']}) +
+      U.divider() +
+      [['第一章 · 初到沙漠','8:12','done','收听','play'],
+       ['第二章 · 沙漠里的狐狸','12:34','done','接着听','play'],
+       ['第三章 · 玫瑰','9:05','done','收听','play'],
+       ['第四章 · 星球','10:41','done','收听','play'],
+       ['第五章 · 落日','7:28','done','收听','play'],
+       ['第六章 · 归途','6:50','done','收听','play']]
+        .map(c=>U.track({title:c[0], sub:c[1], icon:c[4], right:U.stateChip(c[2])+U.B(c[3],'ghost sm')})).join('') +
+      '</div>',
+    tab:1, mini:false
+  })
+});
+
+S({
+  id:'B6', g:'B', name:'阅读器 · 全屏', state:'可听', trigger:'点阅读入口',
+  spec:'ARCHITECTURE feature:book',
+  render: ()=>P({
+    appbar: U.bar({back:true, title:'第二章 · 沙漠里的狐狸', sub:'小王子', trailing:['目录']}),
+    body: '<div class="scroll">' +
+      U.C(
+        U.R(U.T('天亮时，沙漠露出浅金的边。','s')) +
+        U.R(U.T('他把水囊递过去，没说话。','s')) +
+        U.R(U.T('远处有一列骆驼，慢慢挪过沙丘。','s')) +
+        U.R(U.T('风停了，四周安静得像一张纸。','s')) +
+        U.R(U.T('她数到第七颗星，才合上本子。','s'))
+      ) +
+      U.C(
+        U.R(U.T('字号','s') + '<span class="grow"></span>' + U.B('A-','line sm') + U.T('16px','b') + U.B('A+','line sm')) +
+        U.divider() +
+        U.R(U.B('上一章','line') + '<span class="grow"></span>' + U.B('下一章','line'))
+      ) +
+      '</div>',
+    tabs:false, mini:false
+  })
+});
+
+S({
+  id:'B7', g:'B', name:'重新分章 · 确认', state:'可听', trigger:'点重新分章',
+  spec:'CONSTITUTION 内容与导入',
+  render: ()=>P({
+    appbar: U.bar({back:true, title:'小王子', sub:'共 6 章', trailing:['更多']}),
+    body: '<div class="scroll">' +
+      U.stat({title:'可听', pct:66, line:'4 / 6', actions:['接着听','重新分章']}) +
+      U.divider() +
+      [['第一章 · 初到沙漠','8:12','done','收听','play'],
+       ['第二章 · 沙漠里的狐狸','12:34','done','收听','play'],
+       ['第三章 · 玫瑰','9:05','done','收听','play'],
+       ['第四章 · 星球','10:41','done','收听','play'],
+       ['第五章 · 落日','7:28','running','阅读','book'],
+       ['第六章 · 归途','6:50','idle','阅读','book']]
+        .map(c=>U.track({title:c[0], sub:c[1], icon:c[4], right:U.stateChip(c[2])+U.B(c[3],'ghost sm')})).join('') +
+      '</div>' +
+      U.dlg({title:'重新分章', text:'共 6 章 · 已制作的音频会清掉', buttons:['确认','取消']}),
+    tab:1, mini:false
+  })
+});
+
+S({
+  id:'B8', g:'B', name:'单章 · 长按菜单', state:'可听', trigger:'长按单章',
+  spec:'ARCHITECTURE feature:book',
+  render: ()=>P({
+    appbar: U.bar({back:true, title:'小王子', sub:'共 6 章', trailing:['更多']}),
+    body: '<div class="scroll">' +
+      U.stat({title:'可听', pct:66, line:'4 / 6', actions:['接着听','制作这一本']}) +
+      U.divider() +
+      [['第一章 · 初到沙漠','8:12','done','收听','play'],
+       ['第二章 · 沙漠里的狐狸','12:34','done','收听','play'],
+       ['第三章 · 玫瑰','9:05','done','收听','play'],
+       ['第四章 · 星球','10:41','done','收听','play'],
+       ['第五章 · 落日','7:28','running','阅读','book'],
+       ['第六章 · 归途','6:50','idle','阅读','book']]
+        .map(c=>U.track({title:c[0], sub:c[1], icon:c[4], right:U.stateChip(c[2])+U.B(c[3],'ghost sm')})).join('') +
+      '</div>' +
+      U.menu({items:['收听','阅读','制作这一章'], style:'top:300px;left:90px'}),
+    tab:1, mini:false
+  })
+});
+
+/* B9 / B10：总工程师补缺（B 组后台任务只交到 B8，且写入独立文件避免被其重写覆盖） */
+S({id:'B9',g:'B',name:'这一本 · 首帧骨架',
+  state:'加载中', trigger:'冷启动首帧',
+  spec:'ACCEPTANCE C1 冷启动不卡 / ARCHITECTURE feature:book',
+  render:()=>P({tab:1, mini:false, appbar:U.bar({title:'小王子',sub:'共 6 章'}),
+    body:`<div class="scroll">
+      ${U.skel(2)}
+      ${U.skel(4)}
+    </div>`})});
+
+S({id:'B10',g:'B',name:'这一本 · 勾章多选',
+  state:'未开始', trigger:'点「制作这一本」后勾章',
+  spec:'CONSTITUTION 勾章 / ARCHITECTURE feature:book / STATE_VOCAB §2',
+  render:()=>P({tab:1, mini:false, appbar:U.bar({back:true, title:'选章制作', trailing:['全选']}),
+    body:`<div class="scroll">
+      ${U.T('已选 3 章 · 预计 36 分钟','s')}
+      ${U.track({title:'1. 起风了', sub:'8:12', icon:'check', right:U.chip('已选','line')})}
+      ${U.track({title:'2. 沙漠里的狐狸', sub:'9:40', icon:'check', right:U.chip('已选','line')})}
+      ${U.track({title:'3. 玫瑰', sub:'7:28', icon:'check', right:U.chip('已选','line')})}
+      ${U.track({title:'4. 蛇', sub:'6:55', icon:'book', right:U.chip('未选','line')})}
+      ${U.glass(`<div class="row">${U.T('3 章 · 24 块','s')}<span class="grow"></span>${U.B('开始制作','pri sm')}</div>`)}
+    </div>`})});
+
+/* C 组 · 正在做（任务页 · 全 App 唯一状态中心） */
+
+S({
+  id:'C1', g:'C', name:'空闲 · 无任务',
+  state:'未开始', trigger:'没有任何任务',
+  spec:'STATE_VOCAB §1 / ARCHITECTURE feature:tasks',
+  render: ()=>P({
+    appbar: U.bar({title:'正在做'}),
+    body: U.empty('暂无任务', ['去我的书']),
+    tab:2
+  })
+});
+
+S({
+  id:'C2', g:'C', name:'单个任务 · 制作中',
+  state:'制作中', trigger:'一个任务在逐块合成',
+  spec:'STATE_VOCAB §1 RUNNING / U.stat 唯一状态来源',
+  render: ()=>P({
+    appbar: U.bar({title:'正在做', sub:'1 个制作中'}),
+    body: U.stat({title:'制作中 · 山那边', pct:42, line:'第 2 章 · 还剩约 6 分钟', actions:['暂停','看进度']}),
+    tab:2
+  })
+});
+
+S({
+  id:'C3', g:'C', name:'1 个进行中 · 2 个排队',
+  state:'排队中', trigger:'提交多个任务',
+  spec:'STATE_VOCAB §1 QUEUED / stateChip queued',
+  render: ()=>P({
+    appbar: U.bar({title:'正在做', sub:'1 个进行中 · 2 个排队'}),
+    body: U.stat({title:'制作中 · 山那边', pct:42, line:'第 2 章 · 还剩约 6 分钟', actions:['暂停','看进度']})
+      + U.R(U.T('排队 2','s'))
+      + U.track({title:'夜航', sub:'12 章', right:U.stateChip('queued')})
+      + U.track({title:'旧巷钟声', sub:'3 章', right:U.stateChip('queued')}),
+    tab:2
+  })
+});
+
+S({
+  id:'C4', g:'C', name:'已暂停',
+  state:'已暂停', trigger:'用户点了暂停',
+  spec:'STATE_VOCAB §1 PAUSED',
+  render: ()=>P({
+    appbar: U.bar({title:'正在做', sub:'1 个已暂停'}),
+    body: U.stat({title:'已暂停 · 山那边', pct:42, line:'第 2 章', actions:['继续','取消']}),
+    tab:2
+  })
+});
+
+S({
+  id:'C5', g:'C', name:'失败 · 重试 / 看原因',
+  state:'失败', trigger:'某块无法自动恢复',
+  spec:'STATE_VOCAB §1 FAILED / §3 REDO',
+  render: ()=>P({
+    appbar: U.bar({title:'正在做', sub:'1 个失败'}),
+    body: U.stat({title:'失败 · 山那边', pct:42, line:'第 3 章 · 需重做 2 块', actions:['重试','看原因']}),
+    tab:2
+  })
+});
+
+S({
+  id:'C6', g:'C', name:'已达时长上限',
+  state:'已达时长上限', trigger:'本轮额度用完',
+  spec:'STATE_VOCAB §1 LIMIT_REACHED',
+  render: ()=>P({
+    appbar: U.bar({title:'正在做', sub:'1 个已达时长上限'}),
+    body: U.stat({title:'已达时长上限 · 山那边', pct:68, line:'第 4 章', actions:['继续','看进度']}),
+    tab:2
+  })
+});
+
+S({
+  id:'C7', g:'C', name:'已停止',
+  state:'已停止', trigger:'用户主动停止',
+  spec:'STATE_VOCAB §1 STOPPED',
+  render: ()=>P({
+    appbar: U.bar({title:'正在做', sub:'1 个已停止'}),
+    body: U.stat({title:'已停止 · 山那边', pct:35, line:'第 2 章', actions:['继续','删除']}),
+    tab:2
+  })
+});
+
+S({
+  id:'C8', g:'C', name:'已完成 · 去听 / 查看成品',
+  state:'已完成', trigger:'全部块生成并登记',
+  spec:'STATE_VOCAB §1 DONE',
+  render: ()=>P({
+    appbar: U.bar({title:'正在做', sub:'1 个已完成'}),
+    body: U.stat({title:'已完成 · 山那边', pct:100, line:'12 章', actions:['去听','查看成品']}),
+    tab:2
+  })
+});
+
+S({
+  id:'C9', g:'C', name:'看进度 · 块网格',
+  state:'制作中', trigger:'点开看进度',
+  spec:'STATE_VOCAB §3 块状态与子阶段 / U.segGrid + U.legend 唯一一屏',
+  render: ()=>P({
+    appbar: U.bar({back:true, title:'看进度', sub:'山那边'}),
+    body: U.stat({title:'制作中 · 山那边', pct:42, line:'第 2 章 · 还剩约 6 分钟', actions:['暂停']})
+      + U.R(U.T('正在拼接','s'))
+      + U.glass(U.T('第 2 章 · 16 块','s')
+        + U.segGrid([
+          {c:'done',t:'1'},{c:'done',t:'2'},{c:'done',t:'3'},{c:'done',t:'4'},
+          {c:'done',t:'5'},{c:'done',t:'6'},{c:'run',t:'7'},{c:'wait',t:'8'},
+          {c:'done',t:'9'},{c:'done',t:'10'},{c:'redo',t:'11'},{c:'wait',t:'12'},
+          {c:'wait',t:'13'},{c:'wait',t:'14'},{c:'wait',t:'15'},{c:'wait',t:'16'}
+        ])
+        + U.legend()),
+    tab:2
+  })
+});
+
+S({
+  id:'C10', g:'C', name:'我的音频 · 独立入口',
+  state:'可听', trigger:'成品与任务分开',
+  spec:'ARCHITECTURE 状态唯一来源 / CONSTITUTION 职责分开',
+  render: ()=>P({
+    appbar: U.bar({title:'正在做', sub:'1 个制作中'}),
+    body: U.stat({title:'制作中 · 山那边', pct:42, line:'第 2 章 · 还剩约 6 分钟', actions:['暂停','看进度']})
+      + U.divider()
+      + U.glass(U.R(U.T('我的音频 · 8 个成品','b') + U.B('查看','pri sm'))),
+    tab:2
+  })
+});
+
+/* D 组 · 续跑与开做（按 STATE_VOCAB §4 的原因分卡） */
+
+S({
+  id:'D1', g:'D', name:'续跑 · 意外中断',
+  state:'上次意外中断', trigger:'上次进程意外中断后启动',
+  spec:'STATE_VOCAB §4 INTERRUPTED',
+  render: ()=>P({
+    appbar: U.bar({title:'正在做'}),
+    body: U.dlg({
+      title:'上次意外中断',
+      text:'已做好的 18 块都留着',
+      body: U.kv('山那边','第 2 章') + U.kv('已生成','18 块') + U.kv('剩余','6 章'),
+      buttons:['接着做','取消']
+    }),
+    tab:2
+  })
+});
+
+S({
+  id:'D2', g:'D', name:'续跑 · 主动停止',
+  state:'上次是你停的', trigger:'上次用户主动停止后启动',
+  spec:'STATE_VOCAB §4 USER_STOPPED',
+  render: ()=>P({
+    appbar: U.bar({title:'正在做'}),
+    body: U.dlg({
+      title:'上次是你停的',
+      text:'已做好的 12 块都留着',
+      body: U.track({title:'山那边', sub:'第 3 章', right:U.stateChip('paused')})
+        + U.kv('已生成','12 块'),
+      buttons:['继续制作','取消']
+    }),
+    tab:2
+  })
+});
+
+S({
+  id:'D3', g:'D', name:'续跑 · 模型没齐',
+  state:'模型没齐', trigger:'模型份数不足',
+  spec:'STATE_VOCAB §4 MODELS_MISSING',
+  render: ()=>P({
+    appbar: U.bar({title:'正在做'}),
+    body: U.dlg({
+      title:'模型没齐',
+      text:'还差 2 份',
+      body: U.R(U.T('2 / 4 份','big p')) + U.kv('已导入','2 份') + U.kv('还差','2 份'),
+      buttons:['去导入']
+    }),
+    tab:2
+  })
+});
+
+S({
+  id:'D4', g:'D', name:'续跑 · 时长上限',
+  state:'上次到时长上限', trigger:'上次到达时长上限后启动',
+  spec:'STATE_VOCAB §4 LIMIT_REACHED',
+  render: ()=>P({
+    appbar: U.bar({title:'正在做'}),
+    body: U.dlg({
+      title:'上次到时长上限',
+      text:'已做好的 24 块都留着',
+      body: U.kv('山那边','第 4 章') + U.kv('已生成','24 块') + U.kv('本轮','24 / 24 块'),
+      buttons:['继续制作','取消']
+    }),
+    tab:2
+  })
+});
+
+S({
+  id:'D5', g:'D', name:'续跑 · 从未启动成功',
+  state:'上次没启动成功', trigger:'上次没启动成功',
+  spec:'STATE_VOCAB §4 NEVER_STARTED',
+  render: ()=>P({
+    appbar: U.bar({title:'正在做'}),
+    body: U.dlg({
+      title:'上次没启动成功',
+      text:'已重排到队列',
+      body: U.track({title:'山那边', sub:'12 章', right:U.stateChip('queued')})
+        + U.kv('队列','第 1 位'),
+      buttons:['去任务页']
+    }),
+    tab:2
+  })
+});
+
+S({
+  id:'D6', g:'D', name:'续跑 · 队列已暂停',
+  state:'队列已暂停', trigger:'队列被暂停',
+  spec:'STATE_VOCAB §4 QUEUE_PAUSED',
+  render: ()=>P({
+    appbar: U.bar({title:'正在做'}),
+    body: U.dlg({
+      title:'队列已暂停',
+      text:'2 个任务在等',
+      body: U.track({title:'夜航', sub:'12 章', right:U.stateChip('queued')})
+        + U.track({title:'旧巷钟声', sub:'3 章', right:U.stateChip('queued')}),
+      buttons:['继续队列','取消']
+    }),
+    tab:2
+  })
+});
+
+S({
+  id:'D7', g:'D', name:'自动续跑 · 常驻恢复条',
+  state:'自动续跑', trigger:'AUTO 自动接着上次继续',
+  spec:'STATE_VOCAB §4 AUTO / 常驻可撤销，非弹窗非 Toast',
+  render: ()=>P({
+    appbar: U.bar({title:'正在做', sub:'1 个制作中'}),
+    body: U.glass(U.R(U.T('已接着上次继续','b') + U.B('撤销','ghost sm')))
+      + U.stat({title:'制作中 · 山那边', pct:42, line:'第 2 章 · 还剩约 6 分钟', actions:['暂停','看进度']}),
+    tab:2
+  })
+});
+
+S({
+  id:'D8', g:'D', name:'开做之前 · 确认卡',
+  state:'准备中', trigger:'选好章节后点制作',
+  spec:'CONSTITUTION 撤销 PRODUCE 整页 / 改为一张确认卡',
+  render: ()=>P({
+    appbar: U.bar({back:true, title:'山那边'}),
+    body: U.dlg({
+      title:'制作确认',
+      body: U.kv('已选','第 1–3 章') + U.kv('语速','1.0×') + U.kv('格式','64k · M4A')
+        + U.divider() + U.kv('预计','24 块 · 36 分钟')
+        + U.R('<span class="grow"></span>' + U.B('更多参数 ›','ghost sm')),
+      buttons:['开始制作']
+    }),
+    tab:1
+  })
+});
+
+S({
+  id:'E1', g:'E', name:'播放中 · 全屏', state:'正在听',
+  trigger:'从章节列表或迷你条进入全屏播放器',
+  spec:'CONSTITUTION 播放与收听 / ARCHITECTURE feature:player',
+  render: ()=>P({
+    appbar: U.bar({back:true, title:'正在听', sub:'山那边', trailing:['倍速']}),
+    tabs:false, mini:false,
+    body:`<div class="scroll">
+      ${U.cover({txt:'山'})}
+      ${U.C(`
+        ${U.R(U.T('第 2 章 · 全书 2/12','b')+'<span class="grow"></span>'+U.chip('正在听','g'))}
+        ${U.R(U.T('第 2 章 山那边','s'))}
+        ${U.bar2(63)}
+        ${U.R(U.T('12:04','s')+'<span class="grow"></span>'+U.T('19:05','s'))}
+      `)}
+      ${U.playctl({playing:true})}
+      ${U.R(U.T('整本还剩 1:24:06','s')+'<span class="grow"></span>'+U.T('1.0×','s'))}
+      ${U.divider()}
+      ${U.track({title:'播放队列 · 12 章', sub:'第 2 章', icon:'list', right:U.ic('chev')})}
+    </div>`
+  })
+});
+
+S({
+  id:'E2', g:'E', name:'正在听 · 空态', state:'未在播放',
+  trigger:'没有收听记录时进入正在听',
+  spec:'CONSTITUTION 播放与收听 / ARCHITECTURE feature:player',
+  render: ()=>P({
+    appbar: U.bar({title:'正在听'}),
+    tab:3,
+    body:`<div class="scroll">
+      ${U.empty('未在播放', ['去我的书'])}
+    </div>`
+  })
+});
+
+S({
+  id:'E3', g:'E', name:'播放队列 · 展开', state:'播放队列',
+  trigger:'全屏播放器点「播放队列」',
+  spec:'CONSTITUTION 播放与收听 / ARCHITECTURE feature:player',
+  render: ()=>P({
+    appbar: U.bar({back:true, title:'播放队列', sub:'12 章', trailing:['编辑']}),
+    tabs:false, mini:false,
+    body:`<div class="scroll">
+      ${U.R(U.T('接下来 10 章','s')+'<span class="grow"></span>'+U.chip('顺序','line'))}
+      ${U.track({title:'第 1 章 起风', sub:'18:42', icon:'head'})}
+      ${U.track({title:'第 2 章 山那边', sub:'12:04 / 19:05', icon:'play', cls:'', right:U.chip('正在听','g')})}
+      ${U.track({title:'第 3 章 夜路', sub:'16:20', icon:'head'})}
+      ${U.track({title:'第 4 章 老屋', sub:'21:08', icon:'head'})}
+      ${U.track({title:'第 5 章 河湾', sub:'17:36', icon:'head'})}
+      ${U.track({title:'第 6 章 石桥', sub:'19:52', icon:'head'})}
+      ${U.track({title:'第 7 章 归途', sub:'20:11', icon:'head'})}
+      ${U.track({title:'第 8 章 灯下', sub:'15:44', icon:'head'})}
+      ${U.track({title:'第 9 章 长夜', sub:'22:30', icon:'head'})}
+      ${U.track({title:'第 10 章 天亮', sub:'14:15', icon:'head'})}
+      ${U.track({title:'第 11 章 渡口', sub:'18:03', icon:'head'})}
+      ${U.track({title:'第 12 章 山那边', sub:'23:40', icon:'head'})}
+      ${U.R(U.B('清空队列','ghost sm')+'<span class="grow"></span>'+U.T('共 2:47:05','s'))}
+    </div>`
+  })
+});
+
+S({
+  id:'E4', g:'E', name:'倍速与播放模式', state:'正在听',
+  trigger:'播放器点「倍速」',
+  spec:'CONSTITUTION 播放与收听 / ARCHITECTURE feature:player',
+  render: ()=>P({
+    appbar: U.bar({back:true, title:'倍速与模式', sub:'第 2 章 山那边'}),
+    tab:3,
+    body:`<div class="scroll">
+      ${U.C(`${U.R(U.T('倍速','b')+'<span class="grow"></span>'+U.T('1.0×','p b'))}
+        ${U.modes(['0.75×','1.0×','1.25×','1.5×','2.0×'], 1)}`)}
+      ${U.C(`${U.R(U.T('播放模式','b')+'<span class="grow"></span>'+U.T('顺序','s'))}
+        ${U.modes(['顺序','随机','循环'], 0)}`)}
+      ${U.C(U.slider('音量', 70, '%'))}
+      ${U.R(U.B('完成','pri')+'<span class="grow"></span>'+U.T('1.0× · 顺序','s'))}
+    </div>`
+  })
+});
+
+S({
+  id:'E5', g:'E', name:'播放中 · 迷你条', state:'正在听',
+  trigger:'播放时离开播放器回到任一空间',
+  spec:'CONSTITUTION 播放与收听 / ARCHITECTURE feature:player',
+  render: ()=>P({
+    appbar: U.bar({title:'正在听', sub:'山那边', trailing:['队列']}),
+    tab:3,
+    mini: U.mini({title:'山那边 · 第 2 章', sub:'12:04 / 19:05', playing:true}),
+    body:`<div class="scroll">
+      ${U.C(`
+        ${U.R(U.T('第 2 章 山那边','b')+'<span class="grow"></span>'+U.chip('正在听','g'))}
+        ${U.bar2(63)}
+        ${U.R(U.T('12:04 / 19:05','s')+'<span class="grow"></span>'+U.T('整本还剩 1:24:06','s'))}
+      `)}
+      ${U.track({title:'第 3 章 夜路', sub:'16:20', icon:'head', right:U.B('播这章','line sm')})}
+      ${U.track({title:'第 1 章 起风', sub:'18:42', icon:'head', right:U.B('播这章','line sm')})}
+      ${U.track({title:'播放队列 · 12 章', sub:'第 2 章', icon:'list', right:U.ic('chev')})}
+    </div>`
+  })
+});
+
+S({
+  id:'E6', g:'E', name:'已停止', state:'已停止',
+  trigger:'播放中点「停止」',
+  spec:'CONSTITUTION 播放与收听 / ARCHITECTURE feature:player',
+  render: ()=>P({
+    appbar: U.bar({title:'正在听', sub:'山那边', trailing:['倍速']}),
+    tab:3,
+    body:`<div class="scroll">
+      ${U.C(`
+        ${U.R(U.T('第 2 章 山那边','b')+'<span class="grow"></span>'+U.chip('已停止','line'))}
+        ${U.bar2(63)}
+        ${U.R(U.T('12:04','s')+'<span class="grow"></span>'+U.T('19:05','s'))}
+      `)}
+      ${U.R(U.B('继续听','pri')+U.B('从头播','line')+U.B('队列','ghost'))}
+      ${U.divider()}
+      ${U.track({title:'第 3 章 夜路', sub:'16:20', icon:'head'})}
+      ${U.track({title:'第 1 章 起风', sub:'18:42', icon:'head'})}
+    </div>`
+  })
+});
+
+S({
+  id:'E7', g:'E', name:'接着听', state:'未在播放',
+  trigger:'有收听位置时进入正在听',
+  spec:'CONSTITUTION 播放与收听 / ARCHITECTURE feature:player',
+  render: ()=>P({
+    appbar: U.bar({title:'正在听', sub:'接着听'}),
+    tab:3,
+    body:`<div class="scroll">
+      ${U.C(`
+        ${U.R(U.cover({txt:'山', small:true})+'<div class="tk-txt">'+U.T('山那边','b')+U.T('第 2 章 山那边','s')+'</div>'+'<span class="grow"></span>'+U.chip('未在播放','line'))}
+        ${U.bar2(63)}
+        ${U.R(U.T('12:04','s')+'<span class="grow"></span>'+U.T('19:05','s'))}
+        ${U.R(U.T('整本还剩 1:24:06','s')+'<span class="grow"></span>'+U.T('上次 2 小时前','s'))}
+        ${U.R(U.B('接着听','pri')+'<span class="grow"></span>'+U.B('从头','line sm'))}
+      `)}
+      ${U.R(U.T('其他书','s')+'<span class="grow"></span>'+U.T('2 本','s'))}
+      ${U.track({title:'河岸', sub:'第 5 章 08:12 / 16:40', icon:'book', right:U.B('接着听','line sm')})}
+      ${U.track({title:'长夜', sub:'第 1 章 00:00 / 20:30', icon:'book', right:U.B('接着听','line sm')})}
+    </div>`
+  })
+});
+
+S({
+  id:'E8', g:'E', name:'章节跳转', state:'正在听',
+  trigger:'播放器点章节名或「队列」中的章',
+  spec:'CONSTITUTION 播放与收听 / ARCHITECTURE feature:player',
+  render: ()=>P({
+    appbar: U.bar({back:true, title:'章节跳转', sub:'山那边 · 12 章'}),
+    tab:3,
+    body:`<div class="scroll">
+      ${U.track({title:'第 1 章 起风', sub:'18:42', icon:'head', right:U.B('跳到','ghost sm')})}
+      ${U.track({title:'第 2 章 山那边', sub:'12:04 / 19:05', icon:'play', right:U.chip('正在听','g')})}
+      ${U.track({title:'第 3 章 夜路', sub:'16:20', icon:'head', right:U.B('跳到','ghost sm')})}
+      ${U.track({title:'第 4 章 老屋', sub:'21:08', icon:'head', right:U.B('跳到','ghost sm')})}
+      ${U.track({title:'第 5 章 河湾', sub:'17:36', icon:'head', right:U.B('跳到','ghost sm')})}
+      ${U.track({title:'第 6 章 石桥', sub:'19:52', icon:'head', right:U.B('跳到','ghost sm')})}
+      ${U.track({title:'第 7 章 归途', sub:'20:11', icon:'head', right:U.B('跳到','ghost sm')})}
+      ${U.track({title:'第 8 章 灯下', sub:'15:44', icon:'head', right:U.B('跳到','ghost sm')})}
+      ${U.track({title:'第 9 章 长夜', sub:'22:30', icon:'head', right:U.B('跳到','ghost sm')})}
+      ${U.track({title:'第 10 章 天亮', sub:'14:15', icon:'head', right:U.B('跳到','ghost sm')})}
+      ${U.track({title:'第 11 章 渡口', sub:'18:03', icon:'head', right:U.B('跳到','ghost sm')})}
+      ${U.track({title:'第 12 章 山那边', sub:'23:40', icon:'head', right:U.B('跳到','ghost sm')})}
+    </div>`
+  })
+});
+
+S({
+  id:'F1', g:'F', name:'调音台 · 展开', state:'可听', trigger:'点调音台入口',
+  spec:'CONSTITUTION 调音台（保留） / ARCHITECTURE feature:mixer',
+  render: ()=>P({
+    appbar: U.bar({back:true, title:'调音台', sub:'小王子', trailing:['重置']}),
+    body: U.dim(
+      U.glass(
+        U.R(U.T('音色','b') + '<span class="grow"></span>' + U.chip('未保存','w')) +
+        U.voices(['描述音色','角色音色','参考音色'], 0) +
+        U.divider() +
+        U.voices(['沉稳男声','温和女声','清亮少年','沙哑老者','标准播音','轻柔女声'], 1) +
+        U.divider() +
+        U.slider('语速', 52, '%') +
+        U.slider('音调', 48, '%') +
+        U.slider('情绪', 64, '%') +
+        U.divider() +
+        U.R(U.T('风格','s')) +
+        U.modes(['默认','叙事','古风','电台'], 1) +
+        U.divider() +
+        U.track({title:'参考音频', sub:'未选择', icon:'volume', right:U.B('导入','line sm')}) +
+        U.R(U.B('试听','line') + '<span class="grow"></span>' + U.B('保存设置','pri'))
+      )
+    ),
+    tabs:false, mini:false
+  })
+});
+
+S({
+  id:'F2', g:'F', name:'调音台 · 角色音色', state:'可听', trigger:'切换音色分类',
+  spec:'CONSTITUTION 调音台（保留） / ARCHITECTURE feature:mixer',
+  render: ()=>P({
+    appbar: U.bar({back:true, title:'调音台', sub:'小王子', trailing:['重置']}),
+    body: U.dim(
+      U.glass(
+        U.R(U.T('音色','b') + '<span class="grow"></span>' + U.chip('未保存','w')) +
+        U.voices(['描述音色','角色音色','参考音色'], 1) +
+        U.divider() +
+        U.voices(['旁白','少年','青年','老者','少女','商人'], 0) +
+        U.divider() +
+        U.slider('语速', 38, '%') +
+        U.slider('音调', 62, '%') +
+        U.slider('情绪', 78, '%') +
+        U.divider() +
+        U.R(U.T('风格','s')) +
+        U.modes(['默认','叙事','古风','电台'], 2) +
+        U.divider() +
+        U.R(U.T('旁白','s') + '<span class="grow"></span>' + U.T('11 章','s')) +
+        U.R(U.T('角色','s') + '<span class="grow"></span>' + U.T('3 个','s')) +
+        U.divider() +
+        U.R(U.B('试听','line') + '<span class="grow"></span>' + U.B('保存设置','pri'))
+      )
+    ),
+    tabs:false, mini:false
+  })
+});
+
+S({
+  id:'F3', g:'F', name:'调音台 · 试听对比', state:'可听', trigger:'点试听',
+  spec:'CONSTITUTION 调音台（保留） / ARCHITECTURE feature:mixer',
+  render: ()=>P({
+    appbar: U.bar({back:true, title:'试听', sub:'小王子 · 第一章'}),
+    body: U.dim(
+      U.glass(
+        U.R(U.T('对比','b') + '<span class="grow"></span>' + U.chip('未保存','w')) +
+        U.divider() +
+        U.R(
+          U.C(
+            U.T('试听 · 已存配置','b') +
+            U.kv('音色','沉稳男声') + U.kv('语速','52%') + U.kv('风格','叙事') +
+            U.R(U.B('试听','line sm'))
+          , 'grow') +
+          U.C(
+            U.T('试听 · 当前改动','b') +
+            U.kv('音色','沙哑老者') + U.kv('语速','38%') + U.kv('风格','古风') +
+            U.R(U.B('试听','sm'))
+          , 'grow')
+        ) +
+        U.divider() +
+        U.R(U.B('保存设置','line') + '<span class="grow"></span>' + U.B('完成','ghost'))
+      )
+    ),
+    tabs:false, mini:false
+  })
+});
+
+S({
+  id:'F4', g:'F', name:'调音台 · 未保存离开', state:'可听', trigger:'有改动时返回',
+  spec:'CONSTITUTION 调音台（保留） / ARCHITECTURE feature:mixer',
+  render: ()=>P({
+    appbar: U.bar({back:true, title:'调音台', sub:'小王子'}),
+    body: U.glass(
+      U.R(U.T('当前音色','b') + '<span class="grow"></span>' + U.chip('未保存','w')) +
+      U.divider() +
+      U.kv('音色','沙哑老者') + U.kv('语速','38%') + U.kv('音调','62%') + U.kv('风格','古风')
+    ) + U.dlg({
+      title:'改动未保存',
+      text:'音色 · 语速 · 风格',
+      buttons:['保存并离开','继续编辑','丢弃并离开']
+    }),
+    tabs:false, mini:false
+  })
+});
+
+S({
+  id:'F5', g:'F', name:'调音台 · 已保存', state:'可听', trigger:'点保存设置',
+  spec:'CONSTITUTION 调音台（保留） / ARCHITECTURE feature:mixer',
+  render: ()=>P({
+    appbar: U.bar({back:true, title:'调音台', sub:'小王子', trailing:['重置']}),
+    body: U.dim(
+      U.glass(
+        U.R(U.T('音色','b') + '<span class="grow"></span>' + U.chip('已保存','g')) +
+        U.voices(['描述音色','角色音色','参考音色'], 0) +
+        U.divider() +
+        U.voices(['沉稳男声','温和女声','清亮少年','沙哑老者','标准播音','轻柔女声'], 3) +
+        U.divider() +
+        U.slider('语速', 38, '%') +
+        U.slider('音调', 62, '%') +
+        U.slider('情绪', 70, '%') +
+        U.divider() +
+        U.modes(['默认','叙事','古风','电台'], 2) +
+        U.divider() +
+        U.kv('需重做','3 章') + U.kv('可听','8 章') +
+        U.R(U.B('试听','line') + '<span class="grow"></span>' + U.B('完成','ghost'))
+      )
+    ) + U.toast('已保存'),
+    tabs:false, mini:false
+  })
+});
+
+S({
+  id:'F6', g:'F', name:'调音台 · 参考音频', state:'可听', trigger:'点导入参考音频',
+  spec:'CONSTITUTION 调音台（保留） / ARCHITECTURE feature:mixer',
+  render: ()=>P({
+    appbar: U.bar({back:true, title:'调音台', sub:'小王子'}),
+    body: U.glass(
+      U.R(U.T('参考音色','b') + '<span class="grow"></span>' + U.chip('未保存','w')) +
+      U.divider() +
+      U.voices(['描述音色','角色音色','参考音色'], 2) +
+      U.divider() +
+      U.kv('音色','—') + U.kv('语速','52%')
+    ) + U.dlg({
+      title:'参考音频',
+      body: U.track({title:'sample_voice.wav', sub:'0:14 · 44.1kHz', icon:'volume', right:U.chip('已载入','g')}) +
+        U.kv('试听进度','0:06 / 0:14') +
+        U.bar2(42) +
+        U.playctl({playing:true}),
+      buttons:['导入','重选','取消']
+    }),
+    tabs:false, mini:false
+  })
+});
+
+S({id:'G1',g:'G',name:'设置 · 运行状态',state:'已完成',trigger:'从我的书进入设置',spec:'CONSTITUTION 模型与系统 / ARCHITECTURE feature:settings',
+render:()=>P({
+  tab:0,
+  appbar:U.bar({back:true,title:'设置'}),
+  body:`<div class="scroll">
+    ${U.R(U.T('运行状态','s'))}
+    ${U.track({title:'模型',sub:'4 / 4 已就绪',icon:'gear',right:U.chip('就绪','g')})}
+    ${U.track({title:'权限',sub:'麦克风 · 通知 · 存储',icon:'head',right:U.chip('已开启','g')})}
+    ${U.track({title:'存储',sub:'12.4 GB / 64 GB',icon:'book',right:U.chip('充足','line')})}
+    ${U.R(U.T('其他','s'))}
+    ${U.track({title:'外观',sub:'随系统',icon:'moon',right:U.ic('chev')})}
+    ${U.track({title:'我的音频',sub:'3 项 · 1.2 GB',icon:'head',right:U.ic('chev')})}
+    ${U.track({title:'开发者工具',sub:'',icon:'list',right:U.ic('chev')})}
+  </div>`
+})});
+
+S({id:'G2',g:'G',name:'设置 · 外观',state:'已完成',trigger:'设置 → 外观',spec:'CONSTITUTION 模型与系统 / ARCHITECTURE feature:settings',
+render:()=>P({
+  tab:0,
+  appbar:U.bar({back:true,title:'外观'}),
+  body:`<div class="scroll">
+    ${U.track({title:'浅色',sub:'',icon:'sun',right:''})}
+    ${U.track({title:'深色',sub:'',icon:'moon',right:''})}
+    ${U.track({title:'随系统',sub:'',icon:'gear',right:U.chip('当前','g')})}
+  </div>`
+})});
+
+S({id:'G3',g:'G',name:'设置 · 我的音频',state:'已完成',trigger:'设置 → 我的音频',spec:'CONSTITUTION 模型与系统 / ARCHITECTURE feature:settings',
+render:()=>P({
+  tab:0,
+  appbar:U.bar({back:true,title:'我的音频',trailing:['全选','导出']}),
+  body:`<div class="scroll">
+    ${U.R(U.T('已选 2 项','s')+`<span class="grow"></span>`+U.B('导出','line sm')+U.B('删除','ghost sm'))}
+    ${U.track({title:'第一章 声音的起点',sub:'24.8 MB · 12:04',icon:'head',right:U.chip('已选','g')})}
+    ${U.track({title:'第二章 语速与停顿',sub:'22.1 MB · 10:38',icon:'head',right:U.chip('已选','g')})}
+    ${U.track({title:'第三章 语气与重音',sub:'26.4 MB · 13:12',icon:'head',right:''})}
+    ${U.R(U.B('清理中间文件','ghost'))}
+  </div>`
+})});
+
+S({id:'G4',g:'G',name:'设置 · 开发者工具',state:'已完成',trigger:'设置 → 开发者工具',spec:'CONSTITUTION 模型与系统 / ARCHITECTURE feature:settings',
+render:()=>P({
+  tab:0,
+  appbar:U.bar({back:true,title:'开发者工具'}),
+  body:`<div class="scroll">
+    ${U.track({title:'版本',sub:'1.0.0',icon:'gear',right:U.chip('正式','line')})}
+    ${U.track({title:'构建',sub:'240',icon:'list',right:''})}
+    ${U.track({title:'缓存',sub:'318 MB',icon:'book',right:U.B('清理','ghost sm')})}
+    ${U.track({title:'日志',sub:'关闭',icon:'tasks',right:U.sw(false)})}
+    ${U.R(U.B('展开日志','ghost sm'))}
+  </div>`
+})});
+
+S({id:'G5',g:'G',name:'模型 · 未就绪',state:'未开始',trigger:'首次进入模型页',spec:'CONSTITUTION 模型与系统 / ARCHITECTURE feature:models',
+render:()=>P({
+  tab:0,
+  appbar:U.bar({back:true,title:'模型'}),
+  body:`<div class="scroll">
+    ${U.R(U.T('4 份 · 0 已导入','s'))}
+    ${U.track({title:'中文女声 · 标准',sub:'412 MB · 未导入',icon:'head',right:U.B('导入','line sm')})}
+    ${U.track({title:'中文男声 · 沉稳',sub:'468 MB · 未导入',icon:'head',right:U.B('导入','line sm')})}
+    ${U.track({title:'英文女声',sub:'520 MB · 未导入',icon:'head',right:U.B('导入','line sm')})}
+    ${U.track({title:'英文男声',sub:'496 MB · 未导入',icon:'head',right:U.B('导入','line sm')})}
+  </div>`
+})});
+
+S({id:'G6',g:'G',name:'模型 · 已就绪',state:'已完成',trigger:'4 份模型导入完成',spec:'CONSTITUTION 模型与系统 / ARCHITECTURE feature:models',
+render:()=>P({
+  tab:0,
+  appbar:U.bar({back:true,title:'模型'}),
+  body:`<div class="scroll">
+    ${U.R(U.T('4 份 · 4 已导入','s'))}
+    ${U.track({title:'中文女声 · 标准',sub:'412 MB · 已导入',icon:'head',right:U.chip('已导入','g')+U.B('卸载','ghost sm')})}
+    ${U.track({title:'中文男声 · 沉稳',sub:'468 MB · 已导入',icon:'head',right:U.chip('已导入','g')+U.B('卸载','ghost sm')})}
+    ${U.track({title:'英文女声',sub:'520 MB · 已导入',icon:'head',right:U.chip('已导入','g')+U.B('卸载','ghost sm')})}
+    ${U.track({title:'英文男声',sub:'496 MB · 已导入',icon:'head',right:U.chip('已导入','g')+U.B('卸载','ghost sm')})}
+  </div>`
+})});
+
+S({id:'G7',g:'G',name:'模型 · 导入中',state:'准备中',trigger:'导入一份模型并复制到本地',spec:'CONSTITUTION 模型与系统 / ARCHITECTURE feature:models',
+render:()=>P({
+  tab:0,
+  appbar:U.bar({back:true,title:'模型'}),
+  body:`<div class="scroll">
+    ${U.R(U.T('1 份复制中 · 2 份排队中','s'))}
+    ${U.stat({title:'中文女声 · 标准',pct:62,line:'复制中 · 256 MB / 412 MB',actions:['取消']})}
+    ${U.track({title:'中文男声 · 沉稳',sub:'468 MB · 排队中',icon:'head',right:U.chip('排队中','line')})}
+    ${U.track({title:'英文女声',sub:'520 MB · 排队中',icon:'head',right:U.chip('排队中','line')})}
+    ${U.track({title:'英文男声',sub:'496 MB · 未导入',icon:'head',right:U.B('导入','ghost sm')})}
+  </div>`
+})});
+
+S({id:'G8',g:'G',name:'模型 · 卸载确认',state:'制作中',trigger:'制作中点卸载 / 点导入',spec:'CONSTITUTION 模型与系统 / ARCHITECTURE feature:models',
+render:()=>P({
+  tab:0,
+  appbar:U.bar({back:true,title:'模型'}),
+  body:`<div class="scroll">
+    ${U.R(U.T('模型','s')+`<span class="grow"></span>`+U.chip('制作中','w'))}
+    ${U.track({title:'中文女声 · 标准',sub:'412 MB · 已导入',icon:'head',right:U.chip('已导入','g')+U.B('卸载','ghost sm')})}
+    ${U.track({title:'中文男声 · 沉稳',sub:'468 MB · 未导入',icon:'head',right:U.chip('已暂停','line')})}
+    ${U.track({title:'英文女声',sub:'520 MB · 未导入',icon:'head',right:U.chip('已暂停','line')})}
+    ${U.dlg({title:'卸载 中文女声 · 标准',text:'删除 412 MB 模型文件，不可撤销。',buttons:['卸载','取消']})}
+  </div>`
+})});
+
+/* H 组 · 系统态（总工程师亲自画：全 App 最干净的样板，不写字只留数字）
+   旧版唯一做对的地方，照抄并玻璃化。 */
+S({id:'H1',g:'H',name:'通知 · 制作中',
+  state:'制作中', trigger:'开始制作后切到后台',
+  spec:'STATE_VOCAB §6 系统态样板 / ARCHITECTURE platform:service',
+  render:()=>P({tab:0, mini:false, appbar:U.bar({title:'我的书'}),
+    body:`<div class="scroll">
+      ${U.T('3 本','s')}
+      ${U.track({title:'山那边', sub:'12 章 · 已能听 3 章', icon:'book', right:U.stateChip('running')})}
+      ${U.track({title:'夜航', sub:'12 章', icon:'book', right:U.stateChip('done')})}
+      ${U.track({title:'旧巷钟声', sub:'8 章', icon:'book', right:U.stateChip('idle')})}
+    </div>` + U.notif({title:'制作中', text:'', action:'停止', time:'现在'})})});
+
+S({id:'H2',g:'H',name:'通知 · 制作完成',
+  state:'已完成', trigger:'任务完成',
+  spec:'STATE_VOCAB §6',
+  render:()=>P({tab:0, mini:false, appbar:U.bar({title:'我的书'}),
+    body:`<div class="scroll">
+      ${U.T('3 本','s')}
+      ${U.track({title:'山那边', sub:'12 章 · 可听', icon:'book', right:U.stateChip('done')})}
+      ${U.track({title:'夜航', sub:'12 章', icon:'book', right:U.stateChip('done')})}
+    </div>` + U.notif({title:'制作完成', text:'', action:'去听', time:'现在'})})});
+
+S({id:'H3',g:'H',name:'通知 · 已达时长上限',
+  state:'已达时长上限', trigger:'本轮额度用完',
+  spec:'STATE_VOCAB §6 / §1 LIMIT_REACHED',
+  render:()=>P({tab:2, mini:false, appbar:U.bar({title:'正在做'}),
+    body:`<div class="scroll">
+      ${U.T('已达时长上限','s')}
+      ${U.stat({title:'《山那边》', pct:42, line:'第 2 章 · 24 块', actions:['继续','看进度 ›']})}
+    </div>` + U.notif({title:'已达时长上限', text:'', action:'继续', time:'现在'})})});
+
+S({id:'H4',g:'H',name:'悬浮球 · 双环',
+  state:'制作中', trigger:'开启悬浮进度球 · 制作中',
+  spec:'STATE_VOCAB §6 / OverlayProgress 双球：上=整本 下=本章',
+  render:()=>P({tab:1, mini:false, appbar:U.bar({back:true, title:'山那边', sub:'共 12 章'}),
+    body:`<div class="scroll">
+      ${U.stat({title:'可听', pct:25, line:'3 / 12', actions:['接着听']})}
+      ${U.track({title:'1. 起风了', sub:'8:12', icon:'book', right:U.stateChip('done')})}
+      ${U.track({title:'2. 山那边', sub:'制作中', icon:'book', right:U.stateChip('running')})}
+    </div>` + U.ball({v:42, top:280}) + U.ball({v:68, top:342})})});
+
+S({id:'H5',g:'H',name:'悬浮球 · 单球与权限',
+  state:'制作中', trigger:'开启悬浮球 · 缺权限',
+  spec:'STATE_VOCAB §6 / CONSTITUTION 权限集合 SYSTEM_ALERT_WINDOW',
+  render:()=>P({tab:1, mini:false, appbar:U.bar({back:true, title:'山那边', sub:'共 12 章'}),
+    body:`<div class="scroll">
+      ${U.C(U.T('悬浮球需要「显示在其他应用上层」','s') + U.R('<span class="grow"></span>' + U.B('去开启','pri sm')))}
+      ${U.stat({title:'可听', pct:25, line:'3 / 12', actions:['接着听']})}
+      ${U.track({title:'2. 山那边', sub:'制作中', icon:'book', right:U.stateChip('running')})}
+    </div>` + U.ball({v:42, top:300})})});
+
+const DOCS = {"contract": "<h1>统一状态词表（对外唯一口径）</h1>\n<blockquote>\n<p><strong>契约级文件。</strong> 界面、通知、悬浮球、日志对外只用这一张表。\n旧版病根之一：<code>正在合成</code> 在目录页叫「正在把文字读成声音」、任务页叫「正在拼接中」、播放器叫「正在播放」、通知栏叫「本地制作中」；「已完成」在任务页指音频文件、在目录页指章。<strong>6 套词、同名不同物。</strong>\n本表由总工程师定义，<strong>改一个字都要过总工程师</strong>，并同步 <code>roles/*.md</code> 与所有 <code>feature:*</code>。</p>\n</blockquote>\n<h2>0. 三条硬规则</h2>\n<ol>\n<li><strong>一处定义</strong>：状态枚举只在 <code>:core:contract</code> 定义一次，UI 只做 <code>stateChip(kind)</code> 映射，不自己拼词。</li>\n<li><strong>一个进度口径</strong>：全 App 只有一根「整本制作进度」条 + 一个百分比来源（<code>AppState.progress</code>）。目录页与任务页从同一处取数、同词同数。细分进度（第几块 / 第几章）只在任务页详情里出现，不占主视觉。</li>\n<li><strong>单位统一</strong>：全书按「章」，章内按「块」，播放按「条」。禁止混用「段 / 小块 / 块 / 段音频」四种叫法 —— 统一叫<strong>块</strong>。</li>\n</ol>\n<h2>1. 任务生命周期（任务页唯一主体）</h2>\n<table>\n<thead>\n<tr>\n<th>枚举</th>\n<th>界面显示</th>\n<th>chip</th>\n<th>含义</th>\n<th>允许的操作</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td><code>QUEUED</code></td>\n<td>排队中</td>\n<td>line</td>\n<td>已提交，等待启动</td>\n<td>取消 / 提前</td>\n</tr>\n<tr>\n<td><code>PREPARING</code></td>\n<td>准备中</td>\n<td>line</td>\n<td>分章、切块、检查模型</td>\n<td>取消</td>\n</tr>\n<tr>\n<td><code>RUNNING</code></td>\n<td>制作中</td>\n<td>w</td>\n<td>正在逐块合成</td>\n<td>暂停 / 看进度</td>\n</tr>\n<tr>\n<td><code>PAUSED</code></td>\n<td>已暂停</td>\n<td>line</td>\n<td>用户主动暂停，产物保留</td>\n<td>继续 / 取消</td>\n</tr>\n<tr>\n<td><code>STOPPED</code></td>\n<td>已停止</td>\n<td>line</td>\n<td>用户主动停止</td>\n<td>继续 / 删除</td>\n</tr>\n<tr>\n<td><code>LIMIT_REACHED</code></td>\n<td>已达时长上限</td>\n<td>w</td>\n<td>本轮额度用完，产物保留</td>\n<td>继续 / 看进度</td>\n</tr>\n<tr>\n<td><code>FAILED</code></td>\n<td>失败</td>\n<td>r</td>\n<td>出错且无法自动恢复</td>\n<td>重试 / 看原因</td>\n</tr>\n<tr>\n<td><code>DONE</code></td>\n<td>已完成</td>\n<td>g</td>\n<td>全部块生成并登记成品</td>\n<td>去听 / 查看成品</td>\n</tr>\n</tbody>\n</table>\n<p><strong>禁止</strong>：<code>已完成</code> 用来指「已存在的音频文件」；<code>已停止</code> 在还没真正停下时就显示（旧版问题）；<code>正在拼接中 / 正在转码中</code> 与 <code>制作中</code> 并列当成同级状态（它们是子阶段，见 §3）。</p>\n<h2>1.5 导入态（书籍导入流程，独立于制作）</h2>\n<table>\n<thead>\n<tr>\n<th>枚举</th>\n<th>界面显示</th>\n<th>chip</th>\n<th>含义</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td><code>IMPORTING</code></td>\n<td>导入中</td>\n<td>w</td>\n<td>正在解析 txt / md / epub</td>\n</tr>\n<tr>\n<td><code>IMPORT_FAILED</code></td>\n<td>导入失败</td>\n<td>r</td>\n<td>可重试，书不落库</td>\n</tr>\n<tr>\n<td><code>IMPORTED</code></td>\n<td>已导入</td>\n<td>g</td>\n<td>已进书单</td>\n</tr>\n</tbody>\n</table>\n<blockquote>\n<p>导入<strong>不是</strong>制作，禁止复用「制作中」。旧版形态图曾误用（A5），已纠正。</p>\n</blockquote>\n<h2>2. 章状态（目录页 / 这一本）</h2>\n<table>\n<thead>\n<tr>\n<th>枚举</th>\n<th>界面显示</th>\n<th>chip</th>\n<th>含义</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td><code>IDLE</code></td>\n<td>未开始</td>\n<td>line</td>\n<td>没有音频、没有任务</td>\n</tr>\n<tr>\n<td><code>BUILDING</code></td>\n<td>制作中</td>\n<td>w</td>\n<td>属于当前任务，块未齐</td>\n</tr>\n<tr>\n<td><code>READY</code></td>\n<td>可听</td>\n<td>g</td>\n<td>章音频已生成并校验通过</td>\n</tr>\n</tbody>\n</table>\n<p>目录页<strong>每章只显示这三态之一 + 一个收听/阅读入口</strong>，不显示块级网格、不显示两根进度条。</p>\n<h2>3. 块状态（只在任务页「看进度」详情里）</h2>\n<table>\n<thead>\n<tr>\n<th>枚举</th>\n<th>界面显示</th>\n<th>网格色</th>\n<th>含义</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td><code>WAIT</code></td>\n<td>待生成</td>\n<td>sw</td>\n<td>尚未合成</td>\n</tr>\n<tr>\n<td><code>SYNTH</code></td>\n<td>合成中</td>\n<td>sr</td>\n<td>正在生成 WAV</td>\n</tr>\n<tr>\n<td><code>DONE</code></td>\n<td>已生成</td>\n<td>sd</td>\n<td>已落盘</td>\n</tr>\n<tr>\n<td><code>REDO</code></td>\n<td>需重做</td>\n<td>sx</td>\n<td>失败待重做</td>\n</tr>\n</tbody>\n</table>\n<p><strong>子阶段</strong>（属于 <code>RUNNING</code> 的内部阶段，只出现在状态行，不与任务状态并列）：</p>\n<ul>\n<li><code>JOINING</code> → 「正在拼接」</li>\n<li><code>ENCODING</code> → 「正在转码」</li>\n<li><code>REGISTER_FAILED</code> → 「成品登记未成功 · 块已保留」（唯一允许带一句后果说明的例外，因为用户需要知道东西没丢）</li>\n</ul>\n<h2>4. 续跑原因（启动弹窗按原因分卡，不再用同一模板）</h2>\n<table>\n<thead>\n<tr>\n<th>枚举</th>\n<th>界面标题</th>\n<th>界面正文（一句话）</th>\n<th>主按钮</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td><code>INTERRUPTED</code></td>\n<td>上次意外中断</td>\n<td>已做好的 N 块都留着</td>\n<td>接着做</td>\n</tr>\n<tr>\n<td><code>USER_STOPPED</code></td>\n<td>上次是你停的</td>\n<td>已做好的 N 块都留着</td>\n<td>继续制作</td>\n</tr>\n<tr>\n<td><code>MODELS_MISSING</code></td>\n<td>模型没齐</td>\n<td>还差 N 份</td>\n<td>去导入</td>\n</tr>\n<tr>\n<td><code>LIMIT_REACHED</code></td>\n<td>上次到时长上限</td>\n<td>已做好的 N 块都留着</td>\n<td>继续制作</td>\n</tr>\n<tr>\n<td><code>NEVER_STARTED</code></td>\n<td>上次没启动成功</td>\n<td>已重排到队列</td>\n<td>去任务页</td>\n</tr>\n<tr>\n<td><code>QUEUE_PAUSED</code></td>\n<td>队列已暂停</td>\n<td>N 个任务在等</td>\n<td>继续队列</td>\n</tr>\n</tbody>\n</table>\n<p><strong>自动续跑（AUTO）不弹窗</strong>，改为一条常驻、可撤销的恢复条：「已接着上次继续 · 撤销」。禁止用一闪而过的 Toast 代替这次重决策。</p>\n<h2>5. 播放状态</h2>\n<table>\n<thead>\n<tr>\n<th>场景</th>\n<th>界面显示</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>有音频在播</td>\n<td><code>正在听 · 第 X 章</code> + 当前时间 / 剩余时间</td>\n</tr>\n<tr>\n<td>无音频</td>\n<td><code>未在播放</code> + 一个明确去处（去挑一本）</td>\n</tr>\n<tr>\n<td>队列</td>\n<td><code>播放队列 · N 章</code>（可展开）</td>\n</tr>\n<tr>\n<td>常驻条</td>\n<td>书名 + 章名 + 播放/暂停，<strong>不写解释</strong></td>\n</tr>\n</tbody>\n</table>\n<h2>6. 系统级（通知栏 / 悬浮球）—— 全 App 最干净的样板</h2>\n<table>\n<thead>\n<tr>\n<th>场景</th>\n<th>通知标题</th>\n<th>通知正文</th>\n<th>悬浮球</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>制作中</td>\n<td>声页 · 制作中</td>\n<td>不写正文</td>\n<td>双环：上整本 / 下本章，只留百分比数字</td>\n</tr>\n<tr>\n<td>已结束</td>\n<td>声页 · 制作完成</td>\n<td>不写正文</td>\n<td>消失</td>\n</tr>\n<tr>\n<td>时长上限</td>\n<td>声页 · 已达时长上限</td>\n<td>不写正文</td>\n<td>消失</td>\n</tr>\n<tr>\n<td>暂停</td>\n<td>声页 · 已暂停</td>\n<td>不写正文</td>\n<td>保持，数字冻结</td>\n</tr>\n</tbody>\n</table>\n<blockquote>\n<p><strong>原则</strong>：系统态不写字，只留圆环 + 百分比数字。旧版 K 组是唯一做对的地方，照抄。</p>\n</blockquote>\n<h2>7. 禁止词表（旧版叫法一律不再出现）</h2>\n<p><code>正在把文字读成声音</code> · <code>正在往下做</code> · <code>正在按章整理</code> · <code>整本制作 / 已出章音频 / 按顺序播放 / 去任务页看</code>（四件套）· <code>需重新确认</code> · <code>没完成</code> · <code>没开始</code> · <code>段 / 段音频 / 小块</code> 作为单位 · 带内部模块名的 Toast 前缀（如 <code>Producer:</code> <code>AudioOps:</code>）。</p>\n<hr />\n<h1>毛玻璃视觉 token（<code>design:glass</code> 唯一真源）</h1>\n<blockquote>\n<p>视觉只在 <code>:design:glass</code> 定义。<strong>任何页面禁止写死色值 / 模糊半径 / 圆角 / 字重。</strong>\n本文件同时是 <code>preview/index.html</code> 与 <code>spec/</code> 代码绘制图的共同依据：两边用同一套变量名，保证「预览图看十之八九」成立。</p>\n</blockquote>\n<h2>1. 设计原则</h2>\n<table>\n<thead>\n<tr>\n<th>原则</th>\n<th>落地判据</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>层级靠玻璃，不靠边框堆叠</td>\n<td>背景彩色光斑 + 半透明卡 + <code>backdrop-filter</code> + 细边 + 柔和阴影</td>\n</tr>\n<tr>\n<td>克制</td>\n<td>圆角 12–18px、字重只两档（常规 / 加粗）、不做渐变按钮、不做描边图标堆砌</td>\n</tr>\n<tr>\n<td>深浅色都成立</td>\n<td>两套 token，深色下 <code>--sub</code> 必须<strong>有明度差</strong>（旧版深色把 text 与 sub 都刷成纯白，是错的）</td>\n</tr>\n<tr>\n<td>毛玻璃是增强，不是前置条件</td>\n<td>不支持模糊的设备必须自动降级，功能不残、层级不丢</td>\n</tr>\n</tbody>\n</table>\n<h2>2. Token 表</h2>\n<table>\n<thead>\n<tr>\n<th>Token</th>\n<th>浅色</th>\n<th>深色</th>\n<th>用途</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td><code>--accent</code></td>\n<td><code>#4F46E5</code></td>\n<td><code>#A5B4FC</code></td>\n<td>主操作 / 进度 / 选中</td>\n</tr>\n<tr>\n<td><code>--accentSoft</code></td>\n<td><code>#EEF0FE</code></td>\n<td><code>#313C63</code></td>\n<td>次级底 / 图标底</td>\n</tr>\n<tr>\n<td><code>--good</code></td>\n<td><code>#0E9F6E</code></td>\n<td><code>#34D399</code></td>\n<td>可听 / 已完成</td>\n</tr>\n<tr>\n<td><code>--warn</code></td>\n<td><code>#B45309</code></td>\n<td><code>#FBBF24</code></td>\n<td>制作中 / 时长上限</td>\n</tr>\n<tr>\n<td><code>--bad</code></td>\n<td><code>#DC2626</code></td>\n<td><code>#F87171</code></td>\n<td>失败 / 需重做</td>\n</tr>\n<tr>\n<td><code>--ink</code></td>\n<td><code>#1B2030</code></td>\n<td><code>#FFFFFF</code></td>\n<td>主文字</td>\n</tr>\n<tr>\n<td><code>--sub</code></td>\n<td><code>#6B7280</code></td>\n<td><code>rgba(255,255,255,.62)</code></td>\n<td>次要文字（<strong>必须有明度差</strong>）</td>\n</tr>\n<tr>\n<td><code>--hair</code></td>\n<td><code>rgba(27,32,48,.10)</code></td>\n<td><code>rgba(255,255,255,.12)</code></td>\n<td>分隔线 / 轨道</td>\n</tr>\n<tr>\n<td><code>--glass</code></td>\n<td><code>rgba(255,255,255,.58)</code></td>\n<td><code>rgba(24,29,48,.56)</code></td>\n<td>卡片底</td>\n</tr>\n<tr>\n<td><code>--glassEdge</code></td>\n<td><code>rgba(255,255,255,.85)</code></td>\n<td><code>rgba(255,255,255,.16)</code></td>\n<td>卡片细边</td>\n</tr>\n<tr>\n<td><code>--shadow</code></td>\n<td><code>0 10px 26px rgba(31,38,80,.13)</code></td>\n<td><code>0 12px 32px rgba(0,0,0,.46)</code></td>\n<td>柔和阴影</td>\n</tr>\n<tr>\n<td><code>--wall1/2/3</code></td>\n<td>冷蓝 → 淡紫 → 淡青</td>\n<td>近黑 → 深紫 → 深青</td>\n<td>壁纸渐变</td>\n</tr>\n<tr>\n<td><code>--orbA/B/C/D</code></td>\n<td>紫 / 粉 / 蓝 / 橙</td>\n<td>降饱和版本</td>\n<td>背景光斑</td>\n</tr>\n<tr>\n<td><code>--orbO</code></td>\n<td><code>.55</code></td>\n<td><code>.42</code></td>\n<td>光斑不透明度</td>\n</tr>\n<tr>\n<td><code>--tabInk</code></td>\n<td><code>#8A90A6</code></td>\n<td><code>rgba(255,255,255,.45)</code></td>\n<td>未选中 tab</td>\n</tr>\n</tbody>\n</table>\n<p><strong>几何 / 动效</strong></p>\n<table>\n<thead>\n<tr>\n<th>项</th>\n<th>值</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>卡片圆角</td>\n<td>15px（弹窗 18px、设备 34–52px）</td>\n</tr>\n<tr>\n<td>模糊</td>\n<td>卡片 <code>blur(18px) saturate(1.5)</code>；底部 tab / 弹窗 <code>blur(22–26px) saturate(1.6)</code>；遮罩 <code>blur(3px)</code></td>\n</tr>\n<tr>\n<td>间距</td>\n<td>卡片 padding 10–11px，卡间距 9px，内容左右 12px</td>\n</tr>\n<tr>\n<td>字号</td>\n<td>主 11px / 次 10px / 大标题 16–21px / 数字环 20px（以 268px 宽设备图为基准，真机按 sp 换算）</td>\n</tr>\n<tr>\n<td>状态环</td>\n<td><code>conic-gradient(accent var(--v), hair 0)</code>，只留数字，不写字</td>\n</tr>\n<tr>\n<td>动效</td>\n<td>只保留进度条、旋转、滑块；禁止弹跳、禁止大面积位移动画</td>\n</tr>\n</tbody>\n</table>\n<h2>3. Android 落地与降级策略（不骗自己）</h2>\n<p>苹果式 backdrop blur 在 Android 依赖硬件能力，而本项目要保 <strong>Android 8.0+ / arm64-v8a</strong>：</p>\n<table>\n<thead>\n<tr>\n<th>API</th>\n<th>能力</th>\n<th>策略</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>31+ (12)</td>\n<td><code>RenderEffect.createBlurEffect</code></td>\n<td>真毛玻璃，用全套 token</td>\n</tr>\n<tr>\n<td>26–30 (8.0–11)</td>\n<td>无系统 blur</td>\n<td><strong>降级</strong>：<code>--glass</code> 提高不透明度到 <code>.88</code>、去掉 <code>backdrop-filter</code>、保留细边 + 阴影 + 壁纸光斑</td>\n</tr>\n<tr>\n<td>低端机 / 省电模式</td>\n<td>GPU 吃紧</td>\n<td>再降一级：光斑改静态渐变、关掉 saturate</td>\n</tr>\n</tbody>\n</table>\n<blockquote>\n<p>判据：<strong>没有模糊也要能用、要好看</strong>。降级只改 <code>design:glass</code> 一处，<code>feature:*</code> 零改动 —— 这正是模块化的第一个实际收益。</p>\n</blockquote>\n<h2>4. 四个空间的固定骨架</h2>\n<p>每一屏都由 <code>:design:glass</code> 提供同一套骨架，页面只填内容：</p>\n<pre><code>状态栏\n顶栏（大标题 + 一行副标题[可选] + 右侧文字按钮；禁止纯抽象图标无文字）\n内容区（玻璃卡列表 / 状态卡 / 章节行）\n迷你播放条（有播放时）\n底部四空间 tab：我的书 · 这一本 · 正在做 · 正在听\n</code></pre>\n<p>调音台 / 续跑弹窗 / 播放器全屏为<strong>覆盖式浮层</strong>，浮层本身用更高一级模糊与阴影表达层级。</p>", "check": "<h1>验收清单（产物验收 · 不看过程）</h1>\n<blockquote>\n<p>子智能体对我基本是黑盒：看不到推理链，只收到结果。<strong>所以质量靠这份清单，不靠\"看它怎么想\"。</strong>\n每条交付由总工程师逐项打勾；任一硬项不过 → 打回，不合并进度。判据是「用户能不能把事办成 + 真机手感」，不是「静态自检绿不绿」。</p>\n</blockquote>\n<h2>A. 结构硬项（防「牵一发动全身」）</h2>\n<table>\n<thead>\n<tr>\n<th>#</th>\n<th>检查</th>\n<th>方法</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>A1</td>\n<td>任一 <code>feature:*</code> 不 <code>import</code> 另一个 <code>feature:*</code></td>\n<td>静态扫描 import</td>\n</tr>\n<tr>\n<td>A2</td>\n<td>任一页面无文件 IO、无 <code>while(delay)</code> 轮询</td>\n<td>扫描 <code>File(</code> / <code>delay(</code> / <code>LaunchedEffect</code> 内读盘</td>\n</tr>\n<tr>\n<td>A3</td>\n<td>页面内无硬编码色值 / 圆角 / 字重</td>\n<td>扫描 <code>Color(0x</code> / <code>.dp</code> 字面量 / <code>FontWeight</code> 直接量</td>\n</tr>\n<tr>\n<td>A4</td>\n<td>状态词表唯一（一处定义）</td>\n<td>对照 <code>STATE_VOCAB.md</code> 逐字核对</td>\n</tr>\n<tr>\n<td>A5</td>\n<td>删掉任一 <code>feature:*</code>，<code>:app</code> 之外仍能编译</td>\n<td>模块隔离构建</td>\n</tr>\n<tr>\n<td>A6</td>\n<td><code>core:*</code> 无 Android 依赖（除 <code>:core:data</code> 的 IO 例外，需登记）</td>\n<td>依赖扫描</td>\n</tr>\n</tbody>\n</table>\n<h2>B. 界面硬项（防「啰嗦 / 潦草」）</h2>\n<table>\n<thead>\n<tr>\n<th>#</th>\n<th>检查</th>\n<th>方法</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>B1</td>\n<td>界面里没有解释「原理 / 后果 / 用法 / 改一次会怎样」的教程型文字</td>\n<td>逐张形态图 + 字符串清单核对</td>\n</tr>\n<tr>\n<td>B2</td>\n<td>每个运行态都可见：在做什么 / 第几步 / 百分比 / 剩余 / 能否取消</td>\n<td>逐张形态图核对</td>\n</tr>\n<tr>\n<td>B3</td>\n<td>全 App 一根进度条、一个百分比来源；目录页与任务页同词同数</td>\n<td>对照 <code>STATE_VOCAB.md</code> §0</td>\n</tr>\n<tr>\n<td>B4</td>\n<td>播放器有书目 / 章节归属 / 全书位置 / 全本剩余 / 可展开队列</td>\n<td>对照 E 组形态图</td>\n</tr>\n<tr>\n<td>B5</td>\n<td>高频操作图标配文字（不出现纯抽象图标）</td>\n<td>顶栏逐屏核对</td>\n</tr>\n<tr>\n<td>B6</td>\n<td>深色模式 <code>--sub</code> 与 <code>--ink</code> 有明度差</td>\n<td>token 检查 + 截图</td>\n</tr>\n<tr>\n<td>B7</td>\n<td>危险操作确认只留「删什么 + 不可撤销」，不写连锁后果清单</td>\n<td>弹窗文案核对</td>\n</tr>\n<tr>\n<td>B8</td>\n<td>错误落到页面上（可重试 / 可展开），Toast 只留给轻量确认</td>\n<td>交互核对</td>\n</tr>\n</tbody>\n</table>\n<h2>C. 真机手感回归（补上旧版「该适配的不适配」那一半）</h2>\n<blockquote>\n<p>旧版 <code>STATUS.md</code> 自己写着「静态自检绿 ≠ 编译过 ≠ 好用」。目录页卡顿、任务页混乱、播放器潦草都是在静态自检全绿的情况下活到 1.1.43 的。下面这几条<strong>每轮必过</strong>，写进 CI，不写在文档里就算了。</p>\n</blockquote>\n<table>\n<thead>\n<tr>\n<th>#</th>\n<th>检查</th>\n<th>判据</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>C1</td>\n<td>目录页冷启动</td>\n<td>首帧只渲染章节列表，无可感知卡顿；不在组合期读盘</td>\n</tr>\n<tr>\n<td>C2</td>\n<td>运行状态推送</td>\n<td>去掉每秒轮询，改事件驱动；后台时 CPU 无空转</td>\n</tr>\n<tr>\n<td>C3</td>\n<td>任务页 / 目录页状态同源</td>\n<td>同一时刻两页显示的百分比与状态词完全一致</td>\n</tr>\n<tr>\n<td>C4</td>\n<td>播放器信息完整</td>\n<td>见 B4</td>\n</tr>\n<tr>\n<td>C5</td>\n<td>停止立即生效</td>\n<td>点「停止」后状态即时变化，或如实显示「请求停止 · 正在收尾」</td>\n</tr>\n<tr>\n<td>C6</td>\n<td>降级可用</td>\n<td>关掉模糊（模拟 8.0–11）后层级仍清晰、功能无残缺</td>\n</tr>\n</tbody>\n</table>\n<h2>D. 功能保留硬项（防重写丢功能）</h2>\n<p>逐条对照 <code>CONSTITUTION.md</code> 第二节打勾，至少覆盖：</p>\n<ul>\n<li>导入 <code>txt / md / epub</code>、重新分章、阅读器与位置记忆、粘贴一段即念</li>\n<li>勾章 → 逐块落盘断点续跑 → 章级拼接 → 64kbps 单声道 AAC-LC M4A → 校验后删内部 WAV</li>\n<li>AUTO / QUEUE / VIEW 续跑、自动续跑阻断原因、队列暂停、时长上限</li>\n<li>播放队列 / 倍速 0.75–2.0× / 顺序随机循环 / 接着听 / 媒体通知</li>\n<li>调音台三分类 + 滑块 + 预设 + 试听 + 未保存离开确认</li>\n<li>4 份模型导入与复制进度、卸载二次确认、制作中禁导入</li>\n<li>权限集合（<code>FOREGROUND_SERVICE*</code> / <code>POST_NOTIFICATIONS</code> / <code>SYSTEM_ALERT_WINDOW</code> / <code>WAKE_LOCK</code>，<strong>无 INTERNET</strong>）</li>\n</ul>\n<h2>E. 派活 / 收活流程（每次固定动作）</h2>\n<pre><code>主对话派活\n  → 任务说明附：roles/对应档案 + contracts/ARCHITECTURE.md + STATE_VOCAB.md\n                 + GLASS_TOKENS.md + CONSTITUTION.md 相关条款 + spec/SPEC_CONTRACT.md\n  → 子智能体只在自己模块边界内干活，产物落约定路径\n  → 交回：改了什么 / 自检结果 / 踩了什么坑（写回自己档案）\n  → 主对话按本清单验收产物（渲染 / 自检 / 对照宪法与词表）\n  → 主对话更新 02_PROGRESS.md，跑 CI / 提交\n</code></pre>\n<p><strong>子智能体不直接改 <code>02_PROGRESS.md</code>、不改契约、不改宪法。</strong></p>"};
+
+/* 纯机械渲染层：不含任何诊断或设计判断，只把形态图与文档显示出来 */
+const esc = (s) => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const state = {group:'ALL', q:'', view:'figures', theme:'light', mode:'grid'};
+
+function switchView(v){
+  state.view = v;
+  document.querySelectorAll('.view').forEach(e => e.classList.remove('on'));
+  const el = document.getElementById('v-' + v); if (el) el.classList.add('on');
+  document.querySelectorAll('.tool[data-v]').forEach(b => b.classList.toggle('on', b.dataset.v === v));
+}
+function toggleTheme(){
+  state.theme = state.theme === 'light' ? 'dark' : 'light';
+  document.body.dataset.theme = state.theme;
+  document.getElementById('themeBtn').textContent = state.theme === 'light' ? '浅色' : '深色';
+}
+function toggleMode(){
+  state.mode = state.mode === 'grid' ? 'single' : 'grid';
+  document.getElementById('modeBtn').textContent = state.mode === 'grid' ? '平铺' : '单屏';
+  renderGrid();
+}
+function onQ(v){ state.q = (v || '').trim().toLowerCase(); renderGrid(); }
+
+function renderTags(){
+  const box = document.getElementById('gtags');
+  let h = `<span class="gtag ${state.group === 'ALL' ? 'on' : ''}" onclick="setGroup('ALL')">全部 · <b>${SHOTS.length}</b></span>`;
+  for (const g of GROUPS){
+    const n = SHOTS.filter(s => s.g === g.id).length;
+    h += `<span class="gtag ${state.group === g.id ? 'on' : ''}" onclick="setGroup('${g.id}')">${g.id} ${g.name} · ${n}</span>`;
+  }
+  box.innerHTML = h;
+}
+function setGroup(g){ state.group = g; renderTags(); renderGrid(); }
+
+function shotCard(s){
+  let html = '';
+  try { html = s.render(); }
+  catch (e) { html = `<div class="phone"><div class="empty" style="color:#DC2626">渲染失败：${esc(e.message)}</div></div>`; }
+  const meta = [];
+  if (s.state)   meta.push(`<b>运行态</b> ${esc(s.state)}`);
+  if (s.trigger) meta.push(`<b>触发</b> ${esc(s.trigger)}`);
+  if (s.spec)    meta.push(`<span class="src"><b>依据</b> ${esc(s.spec)}</span>`);
+  return `<div class="shot" data-id="${esc(s.id)}">
+    <div class="shot-hd"><span class="shot-id">${esc(s.id)}</span><span class="shot-nm">${esc(s.name)}</span></div>
+    <div onclick="openLb('${esc(s.id)}')" style="cursor:zoom-in">${html}</div>
+    <div class="shot-meta">${meta.join(' &nbsp;·&nbsp; ')}</div>
+  </div>`;
+}
+function match(s){
+  if (state.group !== 'ALL' && s.g !== state.group) return false;
+  const q = String(state.q || '').toLowerCase();
+  if (!q) return true;
+  return [s.id, s.name, s.state, s.trigger, s.spec].join(' ').toLowerCase().includes(q);
+}
+function renderGrid(){
+  const list = SHOTS.filter(match);
+  const grid = document.getElementById('grid');
+  grid.innerHTML = list.map(shotCard).join('') || `<p class="note">没有匹配的形态图。</p>`;
+  grid.style.gridTemplateColumns = state.mode === 'single' ? 'repeat(auto-fill,minmax(268px,1fr))' : '';
+  const n = list.length, groups = new Set(list.map(s => s.g)).size;
+  document.getElementById('figNote').innerHTML =
+    `共 <b>${SHOTS.length}</b> 张代码绘制的形态图，当前显示 <b>${n}</b> 张 / ${groups} 组。` +
+    `每张只表达<b>一个状态</b>；界面里只允许出现「状态 · 书名 · 章名 · 操作名 · 数字」，` +
+    `<b>禁止出现解释原理 / 后果 / 用法的教程型文字</b>。点开可放大。`;
+}
+function openLb(id){
+  const s = SHOTS.find(x => x.id === id); if (!s) return;
+  let html = ''; try { html = s.render(); } catch (e) { html = esc(e.message); }
+  document.getElementById('lbIn').innerHTML = html;
+  document.getElementById('lbCap').textContent = `${s.id} · ${s.name}${s.state ? ' · ' + s.state : ''}`;
+  document.getElementById('lb').classList.add('on');
+}
+function closeLb(){ document.getElementById('lb').classList.remove('on'); }
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLb(); });
+
+renderTags();
+renderGrid();
+document.body.dataset.theme = state.theme;
+document.getElementById('contractDoc').innerHTML = DOCS.contract;
+document.getElementById('checkDoc').innerHTML = DOCS.check;
+
+</script>
+</body>
+</html>

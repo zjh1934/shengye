@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 与 contracts/GLASS_TOKENS.md 的 --wall1 / --accent 保持同值 -->
+    <color name="wall">#DCE3F6</color>
+    <color name="ic_bg">#4F46E5</color>
+</resources>
