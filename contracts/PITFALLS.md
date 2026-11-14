@@ -135,3 +135,69 @@ kotlinOptions { jvmTarget = "17" }
 **正确做法**：仓储层统一收 `ByteArray`（`importBytes(name, bytes)`），
 另给粘贴区一个 `importText(text)`。解码、分章、指纹只写一份，三条路共用。
 不要让 app 层把 content 流先落临时文件再传路径——那是绕路。
+
+
+## 14. 自检脚本会把 MIME 字符串里的 `/*` 误报成注释
+
+**现象**：跑「Kotlin 块注释配对」自检，`MainActivity.kt` 报 `/*=3 */=2`，
+看着像又踩了第 1 条的嵌套注释坑。
+
+**根因**：`pick.launch(arrayOf("text/*"))` 里那个 `/*` 是 MIME 类型字符串的内容，
+编译器按词法先识别字符串，不会当成注释。纯文本计数脚本分不清。
+
+**正确做法**：看到配对不等于别急着改代码，先 `grep -n '/\*\|\*/'` 看命中在哪一行。
+在字符串里就是假阳性。真正危险的是**注释正文**里出现 `/*`（第 1 条）。
+另外纯 JVM 模块（`java-library` + `kotlin.jvm`）用 `jvmToolchain(17)` 已经统一，
+不需要 Android 的 `compileOptions`，「缺 jvmTarget」对它们也是误报。
+
+## 15. 设计态假数据不能画成真机样子
+
+**现象**：规格 B 组画的是「8:12 时长 / 可听 4/6 / 制作中」，但真机上刚导入的书
+全是「未开始」、只有字数、没有任何时长；勾章时块数也还没算出来。
+
+**根因**：形态图为了表达「有数据时长什么样」用了假态。照着它写 UI，
+就会显示一堆不存在的音频时长，等于说假话。
+
+**正确做法**：`spec/` 是结构参考，`preview/real/` 是「做出来长什么样」，
+按真实数据态画（`PREVIEW.md` 第 4 节）。本章真机图用「字数 / 0 章可听 / 未开始」，
+勾章条只写「已选 N 章」不写块数，任务卡排队中不画 0% 空进度条。
+**状态必须说真话**：引擎没接就停 QUEUED，不写 RUNNING，不假装合成成功。
+
+## 16. 条件分支里的 Composable lambda 显式声明类型
+
+**现象**：`topBar = if (cond) { { GlassBackBar(...) } } else null` 这种写法，
+lambda 的 `@Composable` 推断在条件表达式里可能丢失，编译报类型不匹配。
+
+**正确做法**：先声明带类型的局部变量再传：
+
+```kotlin
+val bar: (@Composable () -> Unit)? = if (cond) { { GlassBackBar(...) } } else null
+GlassScaffold(topBar = bar, ...)
+```
+
+`Glass.colors` 是 `@Composable get()`（读 CompositionLocal），
+不能在普通 `map { }` 里取；要在 Composable 上下文或 Composable lambda 里取。
+本轮 `TaskRow` 的进度全用纯逻辑 `Progress` 在 app 层算好，feature 不碰它。
+
+
+## 17. 表达式体函数里不能写 `return`
+
+**现象**：`private fun read(id: String): T? = TaskJson.decode(... ?: return null)` 编译报
+`Returns are prohibited for functions with an expression body. Use block body '{...}'`。
+本轮 `FileTaskRepository.read()` 又踩了一次——之前 `FileBookRepository.storedChunks()`
+也踩过同一个，说明光修一处不够。
+
+**根因**：`fun f() = expr` 的等号后面只能是**表达式**，不能是语句，`return` 是语句。
+带标签的 `return@io` / `return@mapNotNull` 在 lambda 里合法，裸 `return` 不行。
+
+**正确做法**：改成块体。
+
+```kotlin
+private fun read(taskId: String): ProduceTask? {
+    val text = Files2.readTextOrNull(...) ?: return null
+    return TaskJson.decode(text)
+}
+```
+
+**自查**：全仓列出所有裸 `return` 行，看上文函数是不是 `= ` 开头而不是 `{`：
+`python3` 扫 `*.kt` 即可，比等 CI 报快得多。

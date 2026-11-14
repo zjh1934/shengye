@@ -111,6 +111,8 @@ class FileTaskRepository(
         (0 until t.chunksTotal).map { it to ChunkState.WAIT }
     }
 
-    private fun read(taskId: String): ProduceTask? =
-        TaskJson.decode(Files2.readTextOrNull(f(StorageLayout.taskJson(taskId))) ?: return null)
+    private fun read(taskId: String): ProduceTask? {
+        val text = Files2.readTextOrNull(f(StorageLayout.taskJson(taskId))) ?: return null
+        return TaskJson.decode(text)
+    }
 }
