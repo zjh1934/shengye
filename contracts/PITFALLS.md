@@ -115,3 +115,23 @@ kotlinOptions { jvmTarget = "17" }
 **根因**：Java 正则的 `\b` 基于 `\w`（字母数字下划线），中文字符不算 `\w`，所以「章」和后面的空格之间**没有**词边界，`\b` 永远不成立。
 
 **正确做法**：中文匹配不要用 `\b`，靠 `^` 行首 + 明确的字符类来限定。
+
+## 12. `windowInsetsPadding()` 是 @Composable
+
+**现象**：写了个普通 `Modifier.statusBarInset()` 扩展，里面调 `windowInsetsPadding`，编译报
+"Functions which invoke @Composable functions must be marked with the @Composable annotation"。
+
+**根因**：`Modifier.windowInsetsPadding(insets)` 带 `@Composable` 注解，只能在 Composable 上下文里调。
+`Modifier.statusBarsPadding()` 这类便捷扩展同理。
+
+**正确做法**：包装它的 Modifier 扩展自己也标 `@Composable`。Compose 里"只是个 Modifier 链"
+不代表能脱离 Composable 上下文。
+
+## 13. SAF 选文件拿不到路径，粘贴区拿不到文件
+
+**现象**：`ActivityResultContracts.OpenDocument()` 返回的是 `content://` URI，
+`File(uri.path)` 读出来是空的；粘贴区干脆连文件都没有。
+
+**正确做法**：仓储层统一收 `ByteArray`（`importBytes(name, bytes)`），
+另给粘贴区一个 `importText(text)`。解码、分章、指纹只写一份，三条路共用。
+不要让 app 层把 content 流先落临时文件再传路径——那是绕路。

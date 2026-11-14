@@ -70,10 +70,12 @@ fun GlassScaffold(
 }
 
 /** 顶栏吃状态栏高度。沉浸页（播放器全屏）传 false 自己安排。 */
+@Composable
 internal fun Modifier.statusBarInset(enabled: Boolean): Modifier =
     if (enabled) windowInsetsPadding(WindowInsets.statusBars.only(WindowInsetsSides.Top)) else this
 
 /** 底栏吃手势条/导航栏高度。只加在内容上，背景另行铺满。 */
+@Composable
 internal fun Modifier.navBarInset(enabled: Boolean): Modifier =
     if (enabled) windowInsetsPadding(WindowInsets.navigationBars.only(WindowInsetsSides.Bottom)) else this
 
