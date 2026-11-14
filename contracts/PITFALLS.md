@@ -201,3 +201,31 @@ private fun read(taskId: String): ProduceTask? {
 
 **自查**：全仓列出所有裸 `return` 行，看上文函数是不是 `= ` 开头而不是 `{`：
 `python3` 扫 `*.kt` 即可，比等 CI 报快得多。
+
+
+## 18. 骨架里的空 feature 模块都没装 Compose 编译器插件
+
+**现象**：往 `feature:book` / `feature:tasks` 第一次写 `@Composable` 代码，编译挂在一句
+`BackendException: Exception during IR lowering` +
+`couldn't find inline method ColumnKt.Column$default(...)`。日志里**没有** `e: file:...`
+这种常规语法错误，全是 Kotlin 后端内部栈，很容易误判成环境问题。
+
+**根因**：P2 建骨架时只有 `app` / `design:glass` / `feature:library` 装了
+`id("org.jetbrains.kotlin.plugin.compose")` + `buildFeatures { compose = true }`；
+其余 7 个 feature 模块是空的，没装。Kotlin 2.0 起 Compose 编译器由该插件提供，
+没插件的模块里 `@Composable` 函数不做 IR 变换，内联 `Column` 时找不到 `$default` 桥。
+
+**正确做法**：**落码前一次性给所有 `feature:*` 模块补齐**，别等谁先写页面谁先炸：
+
+```kotlin
+plugins {
+    id("com.android.library")
+    id("org.jetbrains.kotlin.android")
+    id("org.jetbrains.kotlin.plugin.compose")
+}
+android { ...; buildFeatures { compose = true } }
+```
+
+`core:*` 是纯逻辑（java-library），`platform:service` / `platform:tts` 是系统层，
+都不该引 Compose，别一起加。看到 `IR lowering` / `couldn't find inline method`
+先查插件，不要去改页面代码。
